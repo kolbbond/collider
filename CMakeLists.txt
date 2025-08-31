@@ -1,11 +1,37 @@
 cmake_minimum_required(VERSION 3.30)
 project(collider)
 
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# enables
+option(ENABLE_GUI "build with smg" ON)
+
+# ensure out of core build
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+  message(
+    FATAL_ERROR
+      "In-source builds not allowed (for your own safety).\nPlease make a new directory (called a build directory) and run CMake from there.\n"
+  )
+endif()
+
+# output paths
+if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin CACHE PATH "" FORCE)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
+endif()
+
+
 # find SDL2
+find_package(chug REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
+
+if(ENABLE_GUI)
+    # find smg
+    find_package(smg REQUIRED)
+endif()
 
 # find armadillo library
 find_package(Armadillo 12.8.0 CONFIG REQUIRED)
@@ -50,9 +76,12 @@ add_library(collider
     )
 
 target_link_libraries(collider
+    chug::chug
+    Arma::Armadillo
+
     SDL2
     SDL2_image
-    Arma::Armadillo
+    smg::smg
 )
 
 target_include_directories(collider PUBLIC

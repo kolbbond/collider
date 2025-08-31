@@ -5,6 +5,8 @@ message(STATUS "testing")
 # add the test files
 set(test_list 
     test_template.cpp
+    test_board.cpp
+    test_board_gui.cpp
 )
 
 
