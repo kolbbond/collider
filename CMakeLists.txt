@@ -22,6 +22,131 @@ if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_LIBRARY_OUTP
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
 endif()
 
+# if bundled
+# Prefer our bundled versions of dependencies.
+if(DEFINED ENV{DEPS_BUILD_DIR})
+  set(DEPS_PREFIX "$ENV{DEPS_BUILD_DIR}/usr" CACHE PATH "Path prefix for finding dependencies")
+else()
+  set(DEPS_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/.deps/usr" CACHE PATH "Path prefix for finding dependencies")
+endif()
+if(DEFINED ENV{COLLIDER_BUILD_DIR})
+  set(COLLIDER_PREFIX "$ENV{COLLIDER_BUILD_DIR}/usr" CACHE PATH "Path prefix for finding dependencies")
+else()
+  set(COLLIDER_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/.goose/usr" CACHE PATH "Path prefix for finding dependencies")
+endif()
+
+# set the goose directory
+set(COLLIDER_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
+# if enable cuda
+# @hey: can we move this to makefile also?
+if(WIN32)
+    set(CUDA_TOOLKIT_ROOT_DIR "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/")
+    set(CMAKE_CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe")
+else()
+    set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda")
+    set(CMAKE_CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
+endif()
+
+# compiler options
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	message(STATUS "using GCC settings")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+	message(STATUS "using Clang settings")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3 -funroll-loops")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	message(STATUS "using MSVC settings")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O2")
+    string( REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}") # enable asserts
+else()
+	message(STATUS "Compiler not recognized")
+endif()
+
+
+if(WIN32)
+    message(STATUS "this is a Windows machine")
+
+    # need to add the Visual Studio environment variables
+    # @hey: hardcoded vcpkg 
+    # add a vcpkg path variable
+    list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/share/")
+    list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/share/freetype")
+    list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/lib/pkgconfig")
+
+    list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/lib/")
+    list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/include/")
+    list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/share/")
+    list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/share/freetype")
+    list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/lib/cmake/SDL2")
+    list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/lib/cmake")
+    list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/include/freetype")
+    list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg/installed/x64-windows/lib/pkgconfig")
+
+    # @hey: add a runtime output for all libraries
+    #list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" "${PROJECT_SOURCE_DIR}/../cmake")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin CACHE PATH "" FORCE)
+
+endif(WIN32)
+if(UNIX)
+  message(STATUS "this is a linux machine")
+    list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/") # for opengl and sdl
+# additional prefix paths
+endif(UNIX)
+
+# insert into lists at the beginning to search there first
+list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/lib/cmake/")
+list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/cmake/")
+list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/share/cmake/Corrade")
+list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/share/pkgconfig")
+list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratmodels")
+list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratmlfmm")
+
+# prepend prefix paths @hey: not all of this is necessary
+list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosecommon")
+list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosematerials")
+list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosenetwork")
+list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosesolver")
+list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosegui")
+list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosepresets")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share/pkgconfig")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/include")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/include/pybind11")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/bin")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/smg")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake") 
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratmodels/") # rat installs to a weird location
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratmlfmm/") # rat installs to a weird location
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratdmsh/") # rat installs to a weird location
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake/smg/") 
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share/cmake/Corrade")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share/cmake/Magnum")
+list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share/cmake/MagnumIntegration")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/") 
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/lib/") 
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/lib/cmake") 
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/lib/cmake/goosecommon") 
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/include/")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/goosecommon/lib")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/goosegui/lib")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/lib/cmake")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/lib/cmake/goosepresets")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/lib/cmake/goosesolver")
+list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/lib/cmake/goosegui")
+list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/")
+list(INSERT CMAKE_PREFIX_PATH 0 "/usr/include/x86_64-linux-gnu/")
+
+list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake")
+list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake/SDL2")
+list(INSERT CMAKE_MODULE_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake")
+list(INSERT CMAKE_MODULE_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake/SDL2/")
+
 
 # find SDL2
 find_package(chug REQUIRED)
