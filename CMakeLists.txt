@@ -15,24 +15,12 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   )
 endif()
 
-# output paths
-if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin CACHE PATH "" FORCE)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
-endif()
-
 # if bundled
 # Prefer our bundled versions of dependencies.
 if(DEFINED ENV{DEPS_BUILD_DIR})
   set(DEPS_PREFIX "$ENV{DEPS_BUILD_DIR}/usr" CACHE PATH "Path prefix for finding dependencies")
 else()
   set(DEPS_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/.deps/usr" CACHE PATH "Path prefix for finding dependencies")
-endif()
-if(DEFINED ENV{COLLIDER_BUILD_DIR})
-  set(COLLIDER_PREFIX "$ENV{COLLIDER_BUILD_DIR}/usr" CACHE PATH "Path prefix for finding dependencies")
-else()
-  set(COLLIDER_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/.goose/usr" CACHE PATH "Path prefix for finding dependencies")
 endif()
 
 # set the goose directory
@@ -67,6 +55,12 @@ else()
 	message(STATUS "Compiler not recognized")
 endif()
 
+# output paths
+if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin CACHE PATH "" FORCE)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
+endif()
 
 if(WIN32)
     message(STATUS "this is a Windows machine")
@@ -103,27 +97,15 @@ list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/lib/cmake/")
 list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/cmake/")
 list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/share/cmake/Corrade")
 list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/share/pkgconfig")
-list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratmodels")
-list(INSERT CMAKE_MODULE_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratmlfmm")
 
 # prepend prefix paths @hey: not all of this is necessary
-list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosecommon")
-list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosematerials")
-list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosenetwork")
-list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosesolver")
-list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosegui")
-list(INSERT CMAKE_PREFIX_PATH 0 "${COLLIDER_PREFIX}/lib/cmake/goosepresets")
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share/pkgconfig")
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/include")
-list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/include/pybind11")
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/bin")
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib")
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/smg")
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share")
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake") 
-list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratmodels/") # rat installs to a weird location
-list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratmlfmm/") # rat installs to a weird location
-list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake/ratdmsh/") # rat installs to a weird location
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/lib/cmake/smg/") 
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share/cmake/Corrade")
 list(INSERT CMAKE_PREFIX_PATH 0 "${DEPS_PREFIX}/share/cmake/Magnum")
@@ -133,15 +115,8 @@ list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/lib/")
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/lib/cmake") 
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/lib/cmake/goosecommon") 
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/build/include/")
-list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/goosecommon/lib")
-list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/goosegui/lib")
-list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/lib/cmake")
-list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/lib/cmake/goosepresets")
-list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/lib/cmake/goosesolver")
-list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_BINARY_DIR}/lib/cmake/goosegui")
 list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/")
 list(INSERT CMAKE_PREFIX_PATH 0 "/usr/include/x86_64-linux-gnu/")
-
 list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake")
 list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake/SDL2")
 list(INSERT CMAKE_MODULE_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake")
