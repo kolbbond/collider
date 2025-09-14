@@ -169,6 +169,7 @@ endif()
 # add sources
 set(source_list 
     src/Board.cpp
+    src/UCI.cpp
 )
 
 add_library(collider

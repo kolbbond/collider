@@ -1,93 +1,72 @@
 #pragma once
 
+#include "common.hh"
 #include "typedefs.hh"
+#include <chug/log.hh>
 
 // bitboards class
 
 namespace cldr {
 
-struct boardStruct
-{
-	int side;
-	
-	int newfrSq;
-	int newtoSq;
+using ShBitBoardsPr = std::shared_ptr<class BitBoards>;
 
-	int frSq;
-	int toSq;
-	
-	int sq[SQNUM];
-	int sq64[64];
-
-	bool castling;
-	bool castled[3];
-	int material[3];
-
-	int enPas;
-	std::vector<int> mL;
-	std::vector<int> score;
-};	
-
-struct pieceStruct
-{
-	int pos;
-	int pos64;
-	int color;
-	int type;
-	int value;
-	bool life;
-	U64 bitboard;
-	int moved;
-	std::vector<int> mL;
-	std::vector<int> caps;
-};
-
-struct bitboardStruct 
-{
-
-	U64 rooks[3];
-	U64 pawns[3];
-	U64 pieces[3];
-	U64 occupiedSquares;
-	U64 emptySquares; 
-
-	U64 rank[8];
-	U64 file[8];
-	U64 diagW[8];
-	U64 diagB[8];
-	U64 passPwn[3][58];
-	U64 iso[8];
-	U64 opfw[3][48];
-	U64 rook_a[3][64];
-	U64 bish_a[3][64];
-	U64 queen_a[3][64];
-	U64 knight_a[3][64];
-	U64 king_a[3][64];
-	U64 pawn_a[3][64];
-};
-
-
-struct indexStruct
-{
-	
-	int sq[SQNUM];
-	int sq64[64];
-};
-
-struct undoStruct
-{
-	int move;
-	int enPas;
-	int piece;
-};
 class BitBoards {
 public:
-	 int pawnTable[64];
-	 int knightTable[64];
-	 int bishopTable[64];
-	 int rookTable[64];
-	 int queenTable[64];
-	 int kingTable1[64];
-	 int kingTable2[64];
+	u64 _pawnTable[64];
+	u64 _knightTable[64];
+	u64 _bishopTable[64];
+	u64 _rookTable[64];
+	u64 _queenTable[64];
+	u64 _kingTable1[64];
+	u64 _kingTable2[64];
+
+	// boards for pieces
+	// @hey: do we need separate boards for each color or can we use the general color & piece operation?
+	u64 _pieces;
+	u64 _wpieces;
+	u64 _bpieces;
+	u64 _pawns;
+	u64 _wpawns;
+	u64 _bpawns;
+	u64 _knights;
+	u64 _wknights;
+	u64 _bknights;
+	u64 _bishops;
+	u64 _wbishops;
+	u64 _bbishops;
+	u64 _rooks;
+	u64 _wrooks;
+	u64 _brooks;
+	u64 _queens;
+	u64 _wqueens;
+	u64 _bqueens;
+	u64 _kings;
+	u64 _wkings;
+	u64 _bkings;
+
+	// attack boards
+	// @hey: can we pre initialize these?
+	// pawn attacks are direction dependent
+	u64 _wpawnattacks[64];
+	u64 _bpawnattacks[64];
+	u64 _knightattacks[64];
+	u64 _bishopattacks[64];
+	u64 _rookattacks[64];
+	u64 _queenattacks[64]; // queen is combination of rook and bishop
+	u64 _kingattacks[64];
+
+    // options
+    bool _memory_efficient = false; // don't precalculate boards
+public:
+	// methods
+	BitBoards();
+	ShBitBoardsPr create();
+	void set_position(std::string fen);
+	void init(chug::ShLogPr);
+
+    // create the attack boards 
+	void create_attack_bitboards();
+
+	//
 };
 } // namespace cldr

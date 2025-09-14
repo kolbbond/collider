@@ -1,6 +1,6 @@
 //DEFINITIONS
 
-#define NAME "Collider 0.1"
+#define NAME "Collider 0.2"
 #define SQNUM 120
 #define SCREEN_HEIGHT 600
 #define SCREEN_WIDTH 600
@@ -8,18 +8,17 @@
 
 //MACROS
 
-/*
-	 These two FR2SQ macros are used for finding the index squares
-  	 when fed file and rank information.
- */
-#define FR2SQ(f,r) ( (21 + (f) ) + ( (r) * 10 ) )    //Finds 120 square index
-#define FR2SQ64(f,r) ( (f) + ( (r) * 8) )	     //Finds 64 square index
-
+// These two FR2SQ macros are used for finding the index squares
+// 	 when fed file and rank information.
+#define FR2SQ(f, r) ((21 + (f)) + ((r) * 10)) //Finds 120 square index
+#define FR2SQ64(f, r) ((f) + ((r) * 8)) //Finds 64 square index
 
 // for bitboards
-typedef unsigned long long U64;
+using U64 = unsigned long long;
+using u64 = unsigned long long;
 
 //ENUMERATION
+// clang-format off
 enum { UP = 10, UPRT = 11, RT = 1, DWNRT = -9, DWN = -10, DWNLEFT = -11, LEFT = -1, UPLEFT = 9, BREAK = 99 };
 enum { ALIVE, DEAD = -1 };
 enum { NOTYPE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
@@ -30,16 +29,17 @@ enum {  EMPTY,
 	bqR, bqN, bqB,  bQ,  bK, bkB, bkN, bkR,
 	bPa, bPb, bPc, bPd, bPe, bPf, bPg, bPh  }; 
 	
+// scores
 enum { NOVAL = 0, PVAL = 100, NVAL = 300, BVAL = 350, RVAL = 500,
        QVAL = 1000, KVAL = 99999 };
 
 /* Constants for File and Rank */
-
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE };
 enum { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE };
 
 /* Constants for colors */
 
+enum class ColorEnum { NONE, WHITE, BLACK };
 enum { NONE, WHITE, BLACK };
 
 /* Constants for every square */

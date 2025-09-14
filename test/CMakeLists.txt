@@ -7,6 +7,7 @@ set(test_list
     test_template.cpp
     test_board.cpp
     test_board_gui.cpp
+    test_uci.cpp
 )
 
 
