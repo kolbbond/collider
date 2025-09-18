@@ -19,7 +19,7 @@
 using U64 = unsigned long long;
 using u64 = unsigned long long;
 
-enum class PieceType : u64 { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
+enum class PieceType : u64 { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, OFFBOARD };
 enum class PieceColor : u64 { NONE, WHITE, BLACK };
 
 //ENUMERATION

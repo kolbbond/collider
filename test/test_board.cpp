@@ -18,6 +18,13 @@ int main(int argc, char** argv) {
 	// create board
 	cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), lg);
 
+    // show board
+	board->display_board(lg);
+
+	// move a piece
+	board->move("e2e4");
+
+    // show board
 	board->display_board(lg);
 
 	// timer and log out

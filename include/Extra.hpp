@@ -23,5 +23,15 @@ public:
 
         return rf2sq64(r, f);
     }
+    static inline u64 char2rank(char c) {
+        // '1' -> 0
+        // '8' -> 7
+        return c - '1';
+    }
+    static inline u64 char2file(char c) {
+        // 'a' -> 0
+        // 'h' -> 7
+        return c - 'a';
+    }
 };
 } // namespace cldr
