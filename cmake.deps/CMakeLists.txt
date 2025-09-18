@@ -24,6 +24,7 @@ option(USE_BUNDLED_SUPERLU "use bundled superlu" ${USE_BUNDLED})
 option(USE_BUNDLED_ARMADILLO "use bundled armadillo" ${USE_BUNDLED})
 option(USE_BUNDLED_OPENBLAS "use bundled openblas (huge package)" OFF)  # just install this system wide 
 option(USE_BUNDLED_TRACY "use bundled tracy" ON) 
+option(USE_BUNDLED_CHUG "use bundled chug" ON) 
 
 # get parallel option from makefile?
 #set(DEPS_BUILD_COMMAND "${CMAKE_COMMAND} --build . --parallel ${N}")
@@ -239,5 +240,9 @@ endif()
 
 if(USE_BUNDLED_TRACY)
     include(BuildTracy)
+endif()
+
+if(USE_BUNDLED_CHUG)
+    include(Buildchug)
 endif()
 

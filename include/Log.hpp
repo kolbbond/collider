@@ -24,8 +24,9 @@
 #define KMAG "\x1B[35m"
 #define KCYN "\x1B[36m"
 #define KWHT "\x1B[37m"
+#define KPNK "\033[38;2;255;20;200m" // brighter?
 
-namespace smg {
+namespace cldr {
 
 // shared pointer definition for Log
 typedef std::shared_ptr<class Log> ShLogPr;
@@ -155,4 +156,4 @@ public:
 			int get_num_indent()override final{return 0;}
 	};
 
-} // namespace smg
+} // namespace cldr

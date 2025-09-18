@@ -55,8 +55,8 @@ public:
 	u64 _queenattacks[64]; // queen is combination of rook and bishop
 	u64 _kingattacks[64];
 
-    // options
-    bool _memory_efficient = false; // don't precalculate boards
+	// options
+	bool _memory_efficient = false; // don't precalculate boards
 public:
 	// methods
 	BitBoards();
@@ -64,9 +64,17 @@ public:
 	void set_position(std::string fen);
 	void init(chug::ShLogPr);
 
-    // create the attack boards 
+	// create the attack boards
 	void create_attack_bitboards();
 
 	//
+	// from bak, set a specific sqs bit
+	void setBit(int sq, U64& bbAddress) {
+		U64 setBit = 1;
+		U64 bb = bbAddress;
+		setBit <<= sq;
+		bb = bb | setBit;
+		bbAddress = bb;
+	}
 };
 } // namespace cldr

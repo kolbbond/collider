@@ -1,9 +1,7 @@
-// testing template with logging and timer
-#include <armadillo>
-#include "Log.hpp"
-#include "chug/log.hh"
+// test the rftosq functions
 
-#include "Board.hpp"
+#include <armadillo>
+#include "chug/log.hh"
 
 int main(int argc, char** argv) {
 
@@ -12,13 +10,9 @@ int main(int argc, char** argv) {
 	timer.tic();
 
 	// create log
-	cldr::ShLogPr lg = cldr::Log::create();
+	chug::ShLogPr lg = chug::Log::create();
 	lg->msg("%s --- Test Template: %s%s --- %s\n", KPNK, __DATE__, __TIME__, KNRM);
 
-	// create board
-	cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), lg);
-
-	board->display_board(lg);
 
 	// timer and log out
 	lg->msg("%s --- Test Time Elapsed: %0.2f --- %s\n", KCYN, timer.toc(), KNRM);

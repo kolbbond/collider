@@ -1,3 +1,6 @@
+CHUG_URL git@github.com:kolbbond/chug.git
+CHUG_SHA256 0 
+
 OPENBLAS_URL https://github.com/OpenMathLib/OpenBLAS/archive/refs/tags/v0.3.29.zip
 OPENBLAS_SHA256 80c09ba570592176212a519434787c6e39b390c36502b2aa0d1975484a12a42e 
 

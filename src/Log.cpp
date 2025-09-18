@@ -3,8 +3,8 @@
 // include header file
 #include "Log.hpp"
 
-// code specific to (Rat) smg
-namespace smg{
+// code specific to (Rat) cldr
+namespace cldr{
 
 	// constructor
 	Log::Log(){

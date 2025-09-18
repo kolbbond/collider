@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.22)
 project(collider)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -57,9 +57,9 @@ endif()
 
 # output paths
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin CACHE PATH "" FORCE)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib CACHE PATH "" FORCE)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "" FORCE)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib CACHE PATH "" FORCE)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib CACHE PATH "" FORCE)
 endif()
 
 if(WIN32)
@@ -124,9 +124,9 @@ list(INSERT CMAKE_MODULE_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake/SDL2/")
 
 
 # find SDL2
-find_package(chug REQUIRED)
 find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
+#find_package(SDL2_image REQUIRED)
+find_package(chug REQUIRED)
 
 if(ENABLE_GUI)
     # find smg
@@ -168,6 +168,9 @@ endif()
 
 # add sources
 set(source_list 
+    #src/Extra.cpp
+    src/Log.cpp
+    src/Piece.cpp
     src/Board.cpp
     src/UCI.cpp
 )

@@ -1,10 +1,12 @@
 //DEFINITIONS
+#pragma once
 
 #define NAME "Collider 0.2"
 #define SQNUM 120
 #define SCREEN_HEIGHT 600
 #define SCREEN_WIDTH 600
-#define startFen "rnbqkbnr/pppppppp/8/8/8/8/pppppppp/RNBQKBNR w KQkq - 0 1"
+//#define startFen "rnbqkbnr/pppppppp/8/8/8/8/pppppppp/RNBQKBNR w KQkq - 0 1"
+#define STARTFEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 //MACROS
 
@@ -16,6 +18,9 @@
 // for bitboards
 using U64 = unsigned long long;
 using u64 = unsigned long long;
+
+enum class PieceType : u64 { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
+enum class PieceColor : u64 { NONE, WHITE, BLACK };
 
 //ENUMERATION
 // clang-format off
@@ -38,9 +43,6 @@ enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE
 enum { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE };
 
 /* Constants for colors */
-
-enum class ColorEnum { NONE, WHITE, BLACK };
-enum { NONE, WHITE, BLACK };
 
 /* Constants for every square */
 
