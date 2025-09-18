@@ -42,7 +42,7 @@ void Board::init(std::string fen, ShLogPr lg) {
 	arma::uword cnt = 0;
 	for(char c : fen) {
 
-		std::printf("(r,f,counter): (%llu, %llu, %llu)\n", rank, file, cnt);
+		//std::printf("(r,f,counter): (%llu, %llu, %llu)\n", rank, file, cnt);
 		// @hey: we can break if the rf2sq64 == 64
 		if(cnt >= 64) break;
 
@@ -88,6 +88,8 @@ void Board::init(std::string fen, ShLogPr lg) {
 		}
 
 		// debug output
+
+		/*
 		lg->msg("Placing piece: (%c, %c) (%s, %s) at rank %llu, file %llu (sq64: %llu, sq120: %llu)\n",
 			c,
 			Piece::get_piece_char(pcolor, ptype),
@@ -97,6 +99,7 @@ void Board::init(std::string fen, ShLogPr lg) {
 			file,
 			Extra::rf2sq64(rank, file),
 			Extra::rf2sq120(rank, file));
+            */
 
 		// insert into board
 		_board64[Extra::rf2sq64(rank, file)] = Piece::create(pcolor, ptype, rank, file);
@@ -119,9 +122,6 @@ void Board::display_board(ShLogPr lg) {
 	for(int rank = 7; rank >= 0; rank--) {
 		for(int file = 0; file < 8; file++) {
 
-			// debug
-			//std::printf("At (r,f): (%i,%i)\n", rank, file);
-
 			// get this sq64 index
 			u64 sq64 = Extra::rf2sq64(rank, file);
 			ShPiecePr pc = _board64[sq64];
@@ -136,9 +136,11 @@ void Board::display_board(ShLogPr lg) {
 			else
 				KMY = KNRM;
 
+			// place piece character
 			lg->msg("%s%c %s", KMY.c_str(), mychar, KNRM);
 		}
 
+		// new rank
 		lg->msg("\n");
 	}
 }
