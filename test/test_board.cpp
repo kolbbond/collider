@@ -44,6 +44,13 @@ int main(int argc, char** argv) {
 	// show board
 	board->display_board(lg);
 
+	// this should fail
+	assert(!board->move("e2e4"));
+
+	board->move("g8f6");
+
+	board->display_board(lg);
+
 	// timer and log out
 	lg->msg("%s --- Test Time Elapsed: %0.2f --- %s\n", KCYN, timer.toc(), KNRM);
 

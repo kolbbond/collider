@@ -35,7 +35,7 @@ public:
 	static ShBoardPr create(std::string fen, ShLogPr log = NullLog::create());
 
 	void init(std::string fen = start_fen(), ShLogPr lg = NullLog::create());
-	void move(std::string move_str);
+	bool move(std::string move_str);
 	void update(ShLogPr lg = NullLog::create());
 	void update_movelist(ShLogPr lg = NullLog::create());
 

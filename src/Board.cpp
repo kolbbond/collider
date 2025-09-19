@@ -171,7 +171,9 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 	ShPiecePr pc = _board120[sq120];
 	PieceType type = pc->get_type();
 	PieceColor color = pc->get_color();
-	assert(type != PieceType::NONE);
+
+    // early exit
+	if(type == PieceType::NONE) { return arma::Row<arma::uword>(); }
 
 	// get base move directions
 	arma::Row<arma::sword> move_directions = PieceMoves::get_moves(type, color);
@@ -340,7 +342,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 arma::Mat<arma::uword> Board::get_movelist() const { return _movelist; }
 
 // move in UCI format, e.g. e2e4
-void Board::move(std::string move_str) {
+bool Board::move(std::string move_str) {
 
 	// parse move
 	assert(move_str.length() == 4 || move_str.length() == 5); //
@@ -368,7 +370,7 @@ void Board::move(std::string move_str) {
 	// check if move is valid
 	if(!is_valid(fr_sq120, to_sq120)) {
 		_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
-		return;
+		return false;
 	}
 
 	// check piece on from square
@@ -386,6 +388,9 @@ void Board::move(std::string move_str) {
 	fr_pc->set_pos(to_rank, to_file);
 	fr_pc->set_moved(true);
 	_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
+
+    // success
+    return true;
 }
 // check if move is valid
 bool Board::is_valid(arma::uword fr_sq120, arma::uword to_sq120) {
@@ -407,6 +412,7 @@ void Board::set_log(ShLogPr lg) {
 	assert(lg != nullptr);
 	_lg = lg;
 }
+
 std::array<ShPiecePr, 120> Board::get_board120() const { return _board120; }
 std::array<ShPiecePr, 64> Board::get_board64() const {
 
@@ -429,7 +435,7 @@ void Board::display_board(ShLogPr lg) {
 	//lg->newl();
 	//lg->msg("\t%s --- Displaying Board --- %s\n", KCYN, KNRM);
 	//lg->newl();
-    
+
 	// get 64 board
 	std::array<ShPiecePr, 64> board64 = get_board64();
 
@@ -478,7 +484,6 @@ void Board::display_board(ShLogPr lg) {
 	lg->newl();
 	lg->msg("\t%s --- ---------------- --- %s\n", KCYN, KNRM);
 	lg->newl();
-
 }
 
 std::string Board::start_fen() { return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; }
