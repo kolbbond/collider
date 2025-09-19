@@ -46,13 +46,18 @@ public:
 	u64 get_rank() const;
 	u64 get_file() const;
 
+	void set_alive(bool alive);
+	void set_moved(bool moved);
+	bool is_alive() const;
+	bool has_moved() const;
+	PieceColor get_enemy_color() const;
+
 	char get_piece_char() const;
 	static char get_piece_char(PieceColor color, PieceType type);
 	static std::string get_type_string(PieceType type);
 	static std::string get_color_string(PieceColor color);
+	static PieceColor get_enemy_color(PieceColor color);
 
 	void display(ShLogPr lg = NullLog::create()) const;
-
-
 };
 } // namespace cldr

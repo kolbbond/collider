@@ -19,7 +19,8 @@
 using u64 = unsigned long long;
 using s64 = signed long long;
 
-enum class PieceType : u64 { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, OFFBOARD }; // @hey: offboard doesn't seem to fit here
+// @hey: offboard or enpassant doesn't seem to fit here
+enum class PieceType : u64 { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, OFFBOARD, ENPASSANT };
 enum class PieceColor : u64 { NONE, WHITE, BLACK };
 enum class MoveDirections : s64 {
 	LEFT = -1,
@@ -33,13 +34,13 @@ enum class MoveDirections : s64 {
 
 	// knight moves first direction is the longer move (2 then 1)
 	KNIGHTUPRIGHT = 21,
+	KNIGHTDOWNRIGHT = -19,
+	KNIGHTUPLEFT = 19,
+	KNIGHTDOWNLEFT = -21,
 	KNIGHTRIGHTUP = 12,
 	KNIGHTRIGHTDOWN = -8,
-	KNIGHTDOWNRIGHT = -19,
-	KNIGHTDOWNLEFT = -21,
-	KNIGHTLEFTDOWN = -12,
 	KNIGHTLEFTUP = 8,
-	KNIGHTUPLEFT = -12,
+	KNIGHTLEFTDOWN = -12,
 
 	// empty
 	BREAK = 99

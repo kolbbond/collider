@@ -1,6 +1,7 @@
 #include "Piece.hpp"
 
 #include "Extra.hpp"
+#include "typedefs.hh"
 #include <cassert>
 #include <cctype>
 #include <string>
@@ -36,10 +37,17 @@ void Piece::set_pos(u64 pos) {
 	_pos = pos;
 }
 
+void Piece::set_alive(bool alive) { _alive = alive; }
+void Piece::set_moved(bool moved) { _moved = moved; }
+
 void Piece::set_pos(u64 rank, u64 file) { set_pos(Extra::rf2sq64(rank, file)); }
 
 PieceColor Piece::get_color() const { return _color; }
 PieceType Piece::get_type() const { return _type; }
+
+
+bool Piece::is_alive() const { return _alive; }
+bool Piece::has_moved() const { return _moved; }
 
 char Piece::get_piece_char() const { return get_piece_char(_color, _type); }
 char Piece::get_piece_char(PieceColor color, PieceType type) {
@@ -89,6 +97,14 @@ std::string Piece::get_color_string(PieceColor color) {
 	}
 	return "unknown";
 }
+
+PieceColor Piece::get_enemy_color() const { return get_enemy_color(_color); }
+PieceColor Piece::get_enemy_color(PieceColor color) {
+	if(color == PieceColor::WHITE) return PieceColor::BLACK;
+	if(color == PieceColor::BLACK) return PieceColor::WHITE;
+	return PieceColor::NONE;
+}
+
 void Piece::display(ShLogPr lg) const {
 	lg->msg("%sPiece: %c (%s, %s) at sq64: %llu%s\n", KMAG, get_piece_char(), get_color_string(_color).c_str(), get_type_string(_type).c_str(), _pos, KNRM);
 }

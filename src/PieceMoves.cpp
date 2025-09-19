@@ -34,14 +34,16 @@ arma::Row<arma::sword> PieceMoves::get_pawn_moves(PieceColor color) {
 	if(color == PieceColor::WHITE) {
 		// clang-format off
 		moves = arma::Row<arma::sword>{
-			static_cast<arma::sword>(MoveDirections::UPLEFT),
+            // put moves first for pawn
             static_cast<arma::sword>(MoveDirections::UP),
+			static_cast<arma::sword>(MoveDirections::UPLEFT),
             static_cast<arma::sword>(MoveDirections::UPRIGHT)
 		};
 	} else if(color == PieceColor::BLACK) {
 		moves = arma::Row<arma::sword>{
-			static_cast<arma::sword>(MoveDirections::DOWNLEFT),
+            // put moves first for pawn
             static_cast<arma::sword>(MoveDirections::DOWN),
+			static_cast<arma::sword>(MoveDirections::DOWNLEFT),
             static_cast<arma::sword>(MoveDirections::DOWNRIGHT)
 		};
     } else {
