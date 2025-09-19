@@ -5,10 +5,8 @@
 #include <sstream>
 #include "Log.hpp"
 #include <csignal>
-//#include "error.hh"
+#include "error.hpp"
 
-// filename macro for shortening the path
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 #define GDEBUG
 

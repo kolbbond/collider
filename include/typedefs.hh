@@ -15,18 +15,44 @@
 #define FR2SQ(f, r) ((21 + (f)) + ((r) * 10)) //Finds 120 square index
 #define FR2SQ64(f, r) ((f) + ((r) * 8)) //Finds 64 square index
 
-// for bitboards
-using U64 = unsigned long long;
+// for bitboards (must be 64 bit, armadillo is system dependent @hey: we could compile with the 64 bit flag if needed)
 using u64 = unsigned long long;
+using s64 = signed long long;
 
-enum class PieceType : u64 { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, OFFBOARD };
+enum class PieceType : u64 { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, OFFBOARD }; // @hey: offboard doesn't seem to fit here
 enum class PieceColor : u64 { NONE, WHITE, BLACK };
+enum class MoveDirections : s64 {
+	LEFT = -1,
+	UPLEFT = 9,
+	UP = 10,
+	UPRIGHT = 11,
+	RIGHT = 1,
+	DOWNRIGHT = -9,
+	DOWN = -10,
+	DOWNLEFT = -11,
 
+	// knight moves first direction is the longer move (2 then 1)
+	KNIGHTUPRIGHT = 21,
+	KNIGHTRIGHTUP = 12,
+	KNIGHTRIGHTDOWN = -8,
+	KNIGHTDOWNRIGHT = -19,
+	KNIGHTDOWNLEFT = -21,
+	KNIGHTLEFTDOWN = -12,
+	KNIGHTLEFTUP = 8,
+	KNIGHTUPLEFT = -12,
+
+	// empty
+	BREAK = 99
+};
+
+
+// scores
+enum class PieceValue : u64 { NOVAL = 0, PVAL = 100, NVAL = 300, BVAL = 350, RVAL = 500, QVAL = 1000, KVAL = 99999 };
+
+//////////////////////////////////////////////////
+// old shit
 //ENUMERATION
 // clang-format off
-enum { UP = 10, UPRT = 11, RT = 1, DWNRT = -9, DWN = -10, DWNLEFT = -11, LEFT = -1, UPLEFT = 9, BREAK = 99 };
-enum { ALIVE, DEAD = -1 };
-enum { NOTYPE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING };
 enum { gEMPTY, gWP, gWN, gWB, gWR, gWQ, gWK, gBP, gBN, gBB, gBR, gBQ, gBK };
 enum {  EMPTY,
 	wqR, wqN, wqB,  wQ,  wK, wkB, wkN, wkR,
@@ -34,17 +60,6 @@ enum {  EMPTY,
 	bqR, bqN, bqB,  bQ,  bK, bkB, bkN, bkR,
 	bPa, bPb, bPc, bPd, bPe, bPf, bPg, bPh  }; 
 	
-// scores
-enum { NOVAL = 0, PVAL = 100, NVAL = 300, BVAL = 350, RVAL = 500,
-       QVAL = 1000, KVAL = 99999 };
-
-/* Constants for File and Rank */
-enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE };
-enum { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE };
-
-/* Constants for colors */
-
-/* Constants for every square */
 
 enum {
 	A1 = 21, B1, C1, D1, E1, F1, G1, H1,
@@ -65,6 +80,4 @@ enum {
 	a6, b6, c6, d6, e6, f6, g6, h6,
 	a7, b7, c7, d7, e7, f7, g7, h7,
 	a8, b8, c8, d8, e8, f8, g8, h8 };
-	
 
-enum { FALSE, TRUE };

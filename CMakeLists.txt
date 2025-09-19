@@ -171,6 +171,7 @@ set(source_list
     #src/Extra.cpp
     src/Log.cpp
     src/Piece.cpp
+    src/PieceMoves.cpp
     src/Board.cpp
     src/UCI.cpp
 )

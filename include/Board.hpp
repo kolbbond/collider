@@ -32,6 +32,7 @@ public:
 	void init(std::string fen = start_fen(), ShLogPr lg = NullLog::create());
 	void move(std::string move_str);
 	void update_movelist();
+	arma::Row<arma::uword> get_moves(arma::uword sq120);
 
 	std::array<ShPiecePr, 64> get_board64() const;
 	std::array<ShPiecePr, 120> get_board120() const;
