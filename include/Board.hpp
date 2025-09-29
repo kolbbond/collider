@@ -63,6 +63,11 @@ public:
 
 	bool is_valid(arma::uword fr_sq120, arma::uword to_sq120);
 	void display_board(ShLogPr lg = NullLog::create());
+	void display_movelist(ShLogPr lg = NullLog::create());
+	std::string get_color_string(PieceColor color) const;
+	std::string get_color_color(PieceColor color) const;
+	std::string get_algebraic_string(arma::uword frsq, arma::uword tosq) const;
+
 
 	static std::string start_fen();
 };

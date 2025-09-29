@@ -25,6 +25,7 @@
 #define KCYN "\x1B[36m"
 #define KWHT "\x1B[37m"
 #define KPNK "\033[38;2;255;20;200m" // brighter?
+#define KORG "\033[34;5;210m" // orange
 
 namespace cldr {
 

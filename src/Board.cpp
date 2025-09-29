@@ -435,9 +435,16 @@ bool Board::move(std::string move_str) {
 	fr_pc->set_moved(true);
 	_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
 
+	// switch color
+	if(get_color() == PieceColor::WHITE)
+		set_color(PieceColor::BLACK);
+	else
+		set_color(PieceColor::WHITE);
+
 	// success
 	return true;
 }
+
 // check if move is valid
 bool Board::is_valid(arma::uword fr_sq120, arma::uword to_sq120) {
 
@@ -478,9 +485,11 @@ std::array<ShPiecePr, 64> Board::get_board64() const {
 
 
 void Board::display_board(ShLogPr lg) {
-	//lg->newl();
-	//lg->msg("\t%s --- Displaying Board --- %s\n", KCYN, KNRM);
-	//lg->newl();
+
+	// header
+	lg->newl();
+	lg->msg("\t%s --- %sCollider V2%s --- %s\n", KCYN, KORG, KCYN, KNRM);
+	lg->msg("\t%s --- Current Move: %s%s%s --- %s\n", KCYN, get_color_color(get_color()).c_str(), get_color_string(get_color()).c_str(), KCYN, KNRM);
 
 	// get 64 board
 	std::array<ShPiecePr, 64> board64 = get_board64();
@@ -530,6 +539,55 @@ void Board::display_board(ShLogPr lg) {
 	lg->newl();
 	lg->msg("\t%s --- ---------------- --- %s\n", KCYN, KNRM);
 	lg->newl();
+}
+
+// quick display of movelist for current position
+void Board::display_movelist(ShLogPr lg) {
+
+	// check movelist
+	assert(!_movelist.is_empty());
+	assert(_movelist.n_rows == 2);
+
+	// header
+	lg->newl();
+	lg->msg("\t%s --- %sdisplay movelist: %s%llu%s--- %s\n", KCYN, KORG, KPNK, _movelist.n_cols, KCYN, KNRM);
+	lg->msg("\t%s frsq - tosq - alg - type - color %s\n", KBLU, KNRM);
+
+	// walk over moves
+	for(int i = 0; i < _movelist.size(); i++) {
+		arma::Col<arma::uword> mymove = _movelist.col(i);
+		arma::uword frsq = mymove(0);
+		arma::uword tosq = mymove(1);
+
+		// log
+		lg->msg("\t%s %llu - %llu - %s - %s - %s - %s %s\n", KBLU, frsq, tosq, get_algebraic_string(frsq, tosq).c_str(), "alg", "type", "color", KNRM);
+	}
+}
+
+
+std::string Board::get_algebraic_string(arma::uword frsq, arma::uword tosq) const {
+	// check squares
+
+	// get rank and file for both fr/to squares
+	return "test";
+}
+
+std::string Board::get_color_string(PieceColor color) const {
+	if(color == PieceColor::WHITE)
+		return "White";
+	else if(color == PieceColor::BLACK)
+		return "Black";
+	else if(color == PieceColor::NONE)
+		return "None";
+}
+
+std::string Board::get_color_color(PieceColor color) const {
+	if(color == PieceColor::WHITE)
+		return KYEL;
+	else if(color == PieceColor::BLACK)
+		return KBLU;
+	else if(color == PieceColor::NONE)
+		return KNRM;
 }
 
 std::string Board::start_fen() { return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; }

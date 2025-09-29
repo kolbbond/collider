@@ -24,6 +24,9 @@ int main(int argc, char** argv) {
 	// update movelist
 	board->update_movelist();
 
+    // display movelist
+    board->display_movelist(lg);
+
 	// get movelist
 	arma::Mat<arma::uword> movelist = board->get_movelist();
 
@@ -44,12 +47,18 @@ int main(int argc, char** argv) {
 	// show board
 	board->display_board(lg);
 
+    // display movelist
+    board->display_movelist(lg);
+
 	// this should fail
 	assert(!board->move("e2e4"));
 
 	board->move("g8f6");
 
 	board->display_board(lg);
+
+    // display movelist
+    board->display_movelist(lg);
 
 	// timer and log out
 	lg->msg("%s --- Test Time Elapsed: %0.2f --- %s\n", KCYN, timer.toc(), KNRM);
