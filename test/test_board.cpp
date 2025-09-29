@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 	// movelist should be what size?
 	// 2 moves per pawn plus 2 per knight
 	// 2*8*2 + 2*2*2 = 40
-	assert(movelist.n_cols == 40);
+	assert(movelist.n_cols == 20);
 
 	// move a piece
 	board->move("e2e4");

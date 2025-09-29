@@ -48,11 +48,17 @@ void Board::init(std::string fen, ShLogPr lg) {
 		}
 	}
 
+	//////////////////////////////////////////////////
+	// Parse FEN
+	//////////////////////////////////////////////////
+
 	// walk over characters in fen
 	arma::uword rank = 0;
 	arma::uword file = 0;
 	arma::uword cnt = 0;
+	arma::uword num_chars = 0;
 	for(char c : fen) {
+		num_chars++;
 
 		//std::printf("(r,f,counter): (%llu, %llu, %llu)\n", rank, file, cnt);
 		// @hey: we can break if the rf2sq64 == 64
@@ -122,6 +128,34 @@ void Board::init(std::string fen, ShLogPr lg) {
 		file++;
 	}
 
+	// parse rest of FEN string
+	// this is includes whos turn it is, where can castle
+	// w KQkq - 0 1"
+	cnt = 0;
+	for(char c : fen) {
+		cnt++;
+		if(cnt < num_chars) continue;
+
+		// check color
+		if(c == 'w') {
+			set_color(PieceColor::WHITE);
+			continue;
+		} else if(c == 'b') {
+			set_color(PieceColor::BLACK);
+			continue;
+		}
+
+		// check castling rights
+		if(c == 'K') {
+			continue;
+		} else if(c == 'Q') {
+			continue;
+		} else if(c == 'k') {
+			continue;
+		} else if(c == 'q') {
+			continue;
+		}
+	}
 
 	// time and log out
 	lg->msg("%sBoard initialized in %.6f seconds.%s\n", KGRN, timer.toc(), KNRM);
@@ -150,6 +184,7 @@ void Board::update_movelist(ShLogPr lg) {
 			PieceType type = pc->get_type();
 			PieceColor color = pc->get_color();
 			if(type == PieceType::NONE) continue;
+			if(color != get_turn()) continue;
 
 			// generate possible moves for this piece at this square
 			arma::Row<arma::uword> moves = get_moves(sq120);
@@ -164,6 +199,17 @@ void Board::update_movelist(ShLogPr lg) {
 	_movelist = arma::join_vert(arma::Row<arma::uword>(from_vec), arma::Row<arma::uword>(to_vec));
 }
 
+void Board::set_color(PieceColor color) { _color = color; }
+PieceColor Board::get_color() const { return _color; }
+PieceColor Board::get_turn() const { return get_color(); }
+bool Board::is_turn(PieceColor color) const { return color == get_turn(); }
+bool Board::can_castle(PieceColor color) const {
+	if(color == PieceColor::WHITE)
+		return _can_castle[0];
+	else if(color == PieceColor::BLACK)
+		return _can_castle[1];
+}
+
 // return possible to squares in 120 index
 arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 
@@ -172,7 +218,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 	PieceType type = pc->get_type();
 	PieceColor color = pc->get_color();
 
-    // early exit
+	// early exit
 	if(type == PieceType::NONE) { return arma::Row<arma::uword>(); }
 
 	// get base move directions
@@ -389,8 +435,8 @@ bool Board::move(std::string move_str) {
 	fr_pc->set_moved(true);
 	_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
 
-    // success
-    return true;
+	// success
+	return true;
 }
 // check if move is valid
 bool Board::is_valid(arma::uword fr_sq120, arma::uword to_sq120) {

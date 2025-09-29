@@ -20,7 +20,15 @@ public:
 	// board storage using Piece class
 	std::array<ShPiecePr, 120> _board120; // 120 board representation to handle off-board moves
 	//ShPiecePr _board64[64]; //
+
+	// the moves for this position
 	arma::Mat<arma::uword> _movelist;
+
+	// who's turn it is
+	PieceColor _color = PieceColor::WHITE;
+
+	// castling rights
+	std::array<bool, 2> _can_castle;
 
 	// log
 	ShLogPr _lg = NullLog::create();
@@ -45,6 +53,13 @@ public:
 
 	std::array<ShPiecePr, 64> get_board64() const;
 	std::array<ShPiecePr, 120> get_board120() const;
+	PieceColor get_turn() const;
+	PieceColor get_color() const;
+
+	void set_color(PieceColor color);
+
+	bool is_turn(PieceColor color) const;
+	bool can_castle(PieceColor color) const;
 
 	bool is_valid(arma::uword fr_sq120, arma::uword to_sq120);
 	void display_board(ShLogPr lg = NullLog::create());

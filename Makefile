@@ -25,8 +25,8 @@ else
   TOUCH := touch
   RM := rm -rf
   CMAKE := $(shell (command -v cmake3 || command -v cmake || echo cmake))
-  CMAKE_GENERATOR ?= "$(shell (command -v ninja > /dev/null 2>&1 && echo "Ninja") || echo "Unix Makefiles")"
-  #CMAKE_GENERATOR := "Unix Makefiles"
+  #CMAKE_GENERATOR ?= "$(shell (command -v ninja > /dev/null 2>&1 && echo "Ninja") || echo "Unix Makefiles")"
+  CMAKE_GENERATOR := Unix Makefiles
   define rmdir
     rm -rf $1
   endef
