@@ -204,9 +204,13 @@ PieceColor Board::get_color() const { return _color; }
 PieceColor Board::get_turn() const { return get_color(); }
 bool Board::is_turn(PieceColor color) const { return color == get_turn(); }
 bool Board::can_castle(PieceColor color) const {
+	// check early
+	if(color != PieceColor::WHITE || color != PieceColor::BLACK) collider_throw_line("board color should only be white/black");
+
+	// check color
 	if(color == PieceColor::WHITE)
 		return _can_castle[0];
-	else if(color == PieceColor::BLACK)
+	else
 		return _can_castle[1];
 }
 
@@ -483,6 +487,12 @@ std::array<ShPiecePr, 64> Board::get_board64() const {
 	return board64;
 }
 
+ShPiecePr Board::get_piece(arma::uword sq120) const {
+	// check sq?
+
+	return _board120[sq120];
+}
+
 
 void Board::display_board(ShLogPr lg) {
 
@@ -548,28 +558,53 @@ void Board::display_movelist(ShLogPr lg) {
 	assert(!_movelist.is_empty());
 	assert(_movelist.n_rows == 2);
 
+	arma::uword num_moves = _movelist.n_cols;
+
 	// header
 	lg->newl();
-	lg->msg("\t%s --- %sdisplay movelist: %s%llu%s--- %s\n", KCYN, KORG, KPNK, _movelist.n_cols, KCYN, KNRM);
-	lg->msg("\t%s frsq - tosq - alg - type - color %s\n", KBLU, KNRM);
+	lg->msg("\t%s --- %sdisplay movelist: %s%llu%s--- %s\n", KCYN, KORG, KPNK, num_moves, KCYN, KNRM);
+	lg->msg("\t%s frsq - tosq - algr - type - color %s\n", KBLU, KNRM);
+
 
 	// walk over moves
-	for(int i = 0; i < _movelist.size(); i++) {
+	for(int i = 0; i < num_moves; i++) {
 		arma::Col<arma::uword> mymove = _movelist.col(i);
 		arma::uword frsq = mymove(0);
 		arma::uword tosq = mymove(1);
 
+		ShPiecePr frpc = _board120[frsq];
+		PieceType frtype = frpc->get_type();
+		PieceColor frcol = frpc->get_color();
+
 		// log
-		lg->msg("\t%s %llu - %llu - %s - %s - %s - %s %s\n", KBLU, frsq, tosq, get_algebraic_string(frsq, tosq).c_str(), "alg", "type", "color", KNRM);
+		lg->msg("\t%s   %llu -   %llu - %s - %s - %c - %s %s \n",
+			KBLU,
+			frsq,
+			tosq,
+			get_algebraic_string(frsq, tosq).c_str(),
+			Piece::get_piece_char(frcol, frtype),
+			Piece::get_color_string(frcol).c_str(),
+			KNRM);
 	}
 }
 
 
+// get the algebraic string for this move i.e. 'e2e4'
+// assumes sq120
 std::string Board::get_algebraic_string(arma::uword frsq, arma::uword tosq) const {
 	// check squares
 
 	// get rank and file for both fr/to squares
-	return "test";
+	arma::uword fr_rank = Extra::get_rank120(frsq);
+	arma::uword fr_file = Extra::get_file120(frsq);
+	arma::uword to_rank = Extra::get_rank120(tosq);
+	arma::uword to_file = Extra::get_file120(tosq);
+
+	// construct string
+	char str[4] = { Extra::file2char(fr_file), Extra::rank2char(fr_rank), Extra::file2char(to_file), Extra::rank2char(to_rank) };
+
+	// cast and return
+	return std::string(str);
 }
 
 std::string Board::get_color_string(PieceColor color) const {
@@ -577,7 +612,7 @@ std::string Board::get_color_string(PieceColor color) const {
 		return "White";
 	else if(color == PieceColor::BLACK)
 		return "Black";
-	else if(color == PieceColor::NONE)
+	else
 		return "None";
 }
 
@@ -586,7 +621,7 @@ std::string Board::get_color_color(PieceColor color) const {
 		return KYEL;
 	else if(color == PieceColor::BLACK)
 		return KBLU;
-	else if(color == PieceColor::NONE)
+	else
 		return KNRM;
 }
 

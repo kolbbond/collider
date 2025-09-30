@@ -53,6 +53,8 @@ public:
 
 	std::array<ShPiecePr, 64> get_board64() const;
 	std::array<ShPiecePr, 120> get_board120() const;
+    ShPiecePr get_piece(arma::uword sq120) const;
+
 	PieceColor get_turn() const;
 	PieceColor get_color() const;
 
