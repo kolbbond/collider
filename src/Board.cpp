@@ -577,7 +577,7 @@ void Board::display_movelist(ShLogPr lg) {
 		PieceColor frcol = frpc->get_color();
 
 		// log
-		lg->msg("\t%s   %llu -   %llu - %s - %s - %c - %s %s \n",
+		lg->msg("\t%s   %llu -   %llu - %s - %c - %s - %s %s \n",
 			KBLU,
 			frsq,
 			tosq,
