@@ -57,7 +57,8 @@ int main(int argc, char** argv) {
 
 	board->display_board(lg);
 
-    // display movelist
+    // update and display movelist
+	board->update_movelist();
     board->display_movelist(lg);
 
 	// timer and log out

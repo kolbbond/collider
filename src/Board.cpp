@@ -563,7 +563,7 @@ void Board::display_movelist(ShLogPr lg) {
 	// header
 	lg->newl();
 	lg->msg("\t%s --- %sdisplay movelist: %s%llu%s--- %s\n", KCYN, KORG, KPNK, num_moves, KCYN, KNRM);
-	lg->msg("\t%s frsq - tosq - algr - type - color %s\n", KBLU, KNRM);
+	lg->msg("\t%s frsq - tosq - algr - frtype - totype %s\n", KBLU, KNRM);
 
 
 	// walk over moves
@@ -575,15 +575,18 @@ void Board::display_movelist(ShLogPr lg) {
 		ShPiecePr frpc = _board120[frsq];
 		PieceType frtype = frpc->get_type();
 		PieceColor frcol = frpc->get_color();
+		ShPiecePr topc = _board120[tosq];
+		PieceType totype = topc->get_type();
+		PieceColor tocol = topc->get_color();
 
 		// log
-		lg->msg("\t%s   %llu -   %llu - %s - %c - %s - %s %s \n",
+		lg->msg("\t%s  %llu     %llu    %s     %c        %c   %s\n",
 			KBLU,
 			frsq,
 			tosq,
 			get_algebraic_string(frsq, tosq).c_str(),
 			Piece::get_piece_char(frcol, frtype),
-			Piece::get_color_string(frcol).c_str(),
+			Piece::get_piece_char(tocol, totype),
 			KNRM);
 	}
 }
