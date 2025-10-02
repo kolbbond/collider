@@ -4,6 +4,7 @@
 #include "debug.hpp"
 
 #include "Board.hpp"
+#include "Engine.hpp"
 
 int main(int argc, char** argv) {
 
@@ -24,8 +25,8 @@ int main(int argc, char** argv) {
 	// update movelist
 	board->update_movelist();
 
-    // display movelist
-    board->display_movelist(lg);
+	// display movelist
+	board->display_movelist(lg);
 
 	// get movelist
 	arma::Mat<arma::uword> movelist = board->get_movelist();
@@ -47,8 +48,8 @@ int main(int argc, char** argv) {
 	// show board
 	board->display_board(lg);
 
-    // display movelist
-    board->display_movelist(lg);
+	// display movelist
+	board->display_movelist(lg);
 
 	// this should fail
 	assert(!board->move("e2e4"));
@@ -57,9 +58,30 @@ int main(int argc, char** argv) {
 
 	board->display_board(lg);
 
-    // update and display movelist
+	// update and display movelist
 	board->update_movelist();
-    board->display_movelist(lg);
+	board->display_movelist(lg);
+
+	// reset board
+	board = cldr::Board::create(cldr::Board::start_fen(), lg);
+
+	// run perft
+	// https://www.chessprogramming.org/Perft
+	// depth   nodes
+	// 1       20
+	// 2       400
+	// 3       8,902
+	// 4       197,281
+	// 5       4,865,609
+	// 6       119,060,324
+	cldr::ShEnginePr engine = cldr::Engine::create(board);
+	arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
+	arma::uword depth = 6;
+	for(arma::uword d = 1; d <= depth; d++) {
+		arma::uword num_nodes = engine->perft(d);
+		lg->msg("%sPerft to depth %llu: %llu nodes (expected %llu)%s\n", KGRN, d, num_nodes, perft_results(d - 1), KNRM);
+		assert(num_nodes == perft_results(d - 1));
+	}
 
 	// timer and log out
 	lg->msg("%s --- Test Time Elapsed: %0.2f --- %s\n", KCYN, timer.toc(), KNRM);

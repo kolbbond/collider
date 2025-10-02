@@ -173,6 +173,7 @@ set(source_list
     src/Piece.cpp
     src/PieceMoves.cpp
     src/Board.cpp
+    src/Engine.cpp
     src/UCI.cpp
 )
 

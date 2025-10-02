@@ -44,6 +44,9 @@ public:
 
 	void init(std::string fen = start_fen(), ShLogPr lg = NullLog::create());
 	bool move(std::string move_str);
+	bool unmove(std::string move_str);
+	//bool move(arma::uword frsq, arma::uword tosq);
+	//bool unmove(arma::uword frsq, arma::uword tosq);
 	void update(ShLogPr lg = NullLog::create());
 	void update_movelist(ShLogPr lg = NullLog::create());
 
@@ -53,7 +56,7 @@ public:
 
 	std::array<ShPiecePr, 64> get_board64() const;
 	std::array<ShPiecePr, 120> get_board120() const;
-    ShPiecePr get_piece(arma::uword sq120) const;
+	ShPiecePr get_piece(arma::uword sq120) const;
 
 	PieceColor get_turn() const;
 	PieceColor get_color() const;

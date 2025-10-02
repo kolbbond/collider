@@ -448,6 +448,63 @@ bool Board::move(std::string move_str) {
 	// success
 	return true;
 }
+// move in UCI format, e.g. e2e4
+bool Board::unmove(std::string move_str) {
+
+	// parse move
+	assert(move_str.length() == 4 || move_str.length() == 5); //
+
+	// get first two chars
+	std::string frsq = move_str.substr(2, move_str.length() - 1);
+	std::string tosq = move_str.substr(0, 2);
+
+	// get ranks and files
+	arma::uword fr_rank = Extra::char2rank(frsq[1]);
+	arma::uword fr_file = Extra::char2file(frsq[0]);
+
+	arma::uword to_rank = Extra::char2rank(tosq[1]);
+	arma::uword to_file = Extra::char2file(tosq[0]);
+
+	arma::uword fr_sq120 = Extra::rf2sq120(fr_rank, fr_file);
+	arma::uword to_sq120 = Extra::rf2sq120(to_rank, to_file);
+
+	// debug
+	std::printf("From square: %s, To square: %s\n", frsq.c_str(), tosq.c_str());
+	std::printf("fr_rank: %llu, fr_file: %llu\n", fr_rank, fr_file);
+	std::printf("to_rank: %llu, to_file: %llu\n", to_rank, to_file);
+	std::printf("fr_sq120: %llu, to_sq120: %llu\n", fr_sq120, to_sq120);
+
+	// check if move is valid
+	if(!is_valid(fr_sq120, to_sq120)) {
+		_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
+		return false;
+	}
+
+	// check piece on from square
+	ShPiecePr fr_pc = _board120[fr_sq120];
+	ShPiecePr to_pc = _board120[to_sq120];
+
+	assert(fr_pc->get_type() != PieceType::NONE);
+	if(to_pc->get_color() == fr_pc->get_enemy_color() && to_pc->get_type() != PieceType::NONE) {
+		_lg->msg("%sCapturing piece: %c at square %s%s\n", KRED, to_pc->get_piece_char(), tosq.c_str(), KNRM);
+		to_pc->set_alive(false);
+	}
+
+	// move piece finally
+	_board120[to_sq120] = fr_pc;
+	fr_pc->set_pos(to_rank, to_file);
+	fr_pc->set_moved(true);
+	_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
+
+	// switch color
+	if(get_color() == PieceColor::WHITE)
+		set_color(PieceColor::BLACK);
+	else
+		set_color(PieceColor::WHITE);
+
+	// success
+	return true;
+}
 
 // check if move is valid
 bool Board::is_valid(arma::uword fr_sq120, arma::uword to_sq120) {
@@ -499,7 +556,12 @@ void Board::display_board(ShLogPr lg) {
 	// header
 	lg->newl();
 	lg->msg("\t%s --- %sCollider V2%s --- %s\n", KCYN, KORG, KCYN, KNRM);
-	lg->msg("\t%s --- Current Move: %s%s%s --- %s\n", KCYN, get_color_color(get_color()).c_str(), get_color_string(get_color()).c_str(), KCYN, KNRM);
+	lg->msg("\t%s --- Current Move: %s%s%s --- %s\n",
+		KCYN,
+		get_color_color(get_color()).c_str(),
+		get_color_string(get_color()).c_str(),
+		KCYN,
+		KNRM);
 
 	// get 64 board
 	std::array<ShPiecePr, 64> board64 = get_board64();
