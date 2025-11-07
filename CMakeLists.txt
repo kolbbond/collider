@@ -168,13 +168,13 @@ endif()
 
 # add sources
 set(source_list 
-    #src/Extra.cpp
-    src/Log.cpp
-    src/Piece.cpp
-    src/PieceMoves.cpp
-    src/Board.cpp
-    src/Engine.cpp
-    src/UCI.cpp
+    #src/Extra.cxx
+    src/Log.cxx
+    src/Piece.cxx
+    src/PieceMoves.cxx
+    src/Board.cxx
+    src/Engine.cxx
+    src/UCI.cxx
 )
 
 add_library(collider
@@ -196,7 +196,7 @@ include
 )
 
 # executable
-add_executable(main main.cpp
+add_executable(main main.cxx
 )
 
 target_link_libraries(main

@@ -1,10 +1,10 @@
 // testing template with logging and timer
 #include <armadillo>
-#include "Log.hpp"
-#include "debug.hpp"
+#include "Log.hxx"
+#include "debug.hxx"
 
-#include "Board.hpp"
-#include "Engine.hpp"
+#include "Board.hxx"
+#include "Engine.hxx"
 
 int main(int argc, char** argv) {
 

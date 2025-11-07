@@ -1,8 +1,8 @@
 // class for piece information
 #pragma once
 
-#include "Log.hpp"
-#include "collider.hpp"
+#include "Log.hxx"
+#include "collider.hxx"
 #include <memory>
 #include <vector>
 #include "typedefs.hh"

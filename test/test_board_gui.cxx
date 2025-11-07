@@ -1,7 +1,7 @@
 // testing template with logging and timer
 #include <armadillo>
 #include <smg/GuiBase.hh>
-#include "Board.hpp"
+#include "Board.hxx"
 #include "chug/log.hh"
 
 int main(int argc, char** argv) {

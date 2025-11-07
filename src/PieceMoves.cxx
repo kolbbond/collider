@@ -1,6 +1,6 @@
 
-#include "PieceMoves.hpp"
-#include "error.hpp"
+#include "PieceMoves.hxx"
+#include "error.hxx"
 #include "typedefs.hh"
 #include <armadillo>
 

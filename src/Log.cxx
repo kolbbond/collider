@@ -1,7 +1,7 @@
 // taken from Van Nugterens rat-common
 
 // include header file
-#include "Log.hpp"
+#include "Log.hxx"
 
 // code specific to (Rat) cldr
 namespace cldr{

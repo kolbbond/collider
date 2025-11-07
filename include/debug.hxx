@@ -3,9 +3,9 @@
 
 #include <iostream>
 #include <sstream>
-#include "Log.hpp"
+#include "Log.hxx"
 #include <csignal>
-#include "error.hpp"
+#include "error.hxx"
 
 
 #define GDEBUG

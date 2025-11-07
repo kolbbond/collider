@@ -10,7 +10,7 @@
 
 #include "typedefs.hh"
 
-#include "Log.hpp"
+#include "Log.hxx"
 
 // macro for error
 // parasitic geese over here

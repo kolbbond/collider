@@ -1,7 +1,7 @@
 #include <string>
 #include <cassert>
 
-#include "UCI.hpp"
+#include "UCI.hxx"
 
 namespace cldr {
     // parse the input from the GUI

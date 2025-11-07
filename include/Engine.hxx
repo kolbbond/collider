@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Board.hpp"
+#include "Board.hxx"
 #include <armadillo>
 namespace cldr {
 

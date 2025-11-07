@@ -1,8 +1,8 @@
 #include <armadillo>
-#include "Extra.hpp"
-#include "Board.hpp"
-#include "debug.hpp"
-#include "PieceMoves.hpp"
+#include "Extra.hxx"
+#include "Board.hxx"
+#include "debug.hxx"
+#include "PieceMoves.hxx"
 #include "typedefs.hh"
 
 namespace cldr {

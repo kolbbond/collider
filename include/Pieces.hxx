@@ -4,8 +4,7 @@
 #include <vector>
 
 #include "typedefs.hh"
-#include "Piece.hpp"
-
+#include "Piece.hxx"
 
 namespace cldr {
 

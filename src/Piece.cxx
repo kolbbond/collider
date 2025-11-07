@@ -1,6 +1,6 @@
-#include "Piece.hpp"
+#include "Piece.hxx"
 
-#include "Extra.hpp"
+#include "Extra.hxx"
 #include "typedefs.hh"
 #include <cassert>
 #include <cctype>

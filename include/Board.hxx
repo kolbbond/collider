@@ -6,8 +6,8 @@
 #include <vector>
 #include <array>
 
-#include "Log.hpp"
-#include "Piece.hpp"
+#include "Log.hxx"
+#include "Piece.hxx"
 #include "typedefs.hh"
 
 namespace cldr {
