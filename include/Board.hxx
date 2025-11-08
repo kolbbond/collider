@@ -16,6 +16,12 @@ using ShBoardPr = std::shared_ptr<class Board>;
 
 
 class Board {
+
+	struct EnPassantInfo {
+		arma::uword square = 0;
+		PieceColor color = PieceColor::NONE;
+	};
+
 public:
 	// board storage using Piece class
 	std::array<ShPiecePr, 120> _board120; // 120 board representation to handle off-board moves
@@ -31,7 +37,7 @@ public:
 	std::array<bool, 2> _can_castle;
 
 	// enpassant squares
-	std::vector<arma::uword> _enpassant_list = { 0 };
+	std::vector<EnPassantInfo> _enpassant_list = { { 0, PieceColor::NONE } };
 	//arma::uword _enpassant_square;
 
 	// store made moves for unmove

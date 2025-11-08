@@ -1,4 +1,5 @@
 #include <armadillo>
+#include <iostream>
 #include "Extra.hxx"
 #include "Board.hxx"
 #include "debug.hxx"
@@ -219,7 +220,7 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 				// this move is invalid
 				moveidx(i) = 0;
 				COLLIDER_DEBUG("found a check");
-				collider_throw_line("Check found in movelist generation.");
+				//collider_throw_line("Check found in movelist generation.");
 			}
 		}
 
@@ -402,56 +403,9 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 				}
 			}
 		}
-	}
-
-	// handle pawn
-	else if(type == PieceType::PAWN) {
-
-		// walk over directions
-		for(arma::sword i = 0; i < move_directions.n_elem; i++) {
-			arma::sword mydir = move_directions(i);
-			arma::uword tosq = sq120 + mydir;
-			assert(tosq < 120);
-			ShPiecePr to_pc = _board120[tosq];
-
-			// pawn moves
-			if(mydir == static_cast<arma::sword>(MoveDirections::UP) || mydir == static_cast<arma::sword>(MoveDirections::DOWN)) {
-
-				if(to_pc->get_type() != PieceType::NONE)
-					continue;
-
-				else {
-					// add to move vec
-					move_vec.push_back(tosq);
-
-					// if moved then
-					// check first move for double step
-					// Exception: double pawn move on first turn
-					if(!pc->has_moved()) {
-						arma::sword mydir = move_directions(i);
-						arma::uword tosq = sq120 + mydir * 2;
-						assert(tosq < 120);
-						ShPiecePr to_pc = _board120[tosq];
-						if(to_pc->get_type() != PieceType::NONE) {
-							continue;
-						} else {
-							move_vec.push_back(tosq);
-						}
-					}
-				}
-			}
-
-			// pawn captures
-			// Exception: en passant capture (enpassant)
-			if(to_pc->get_color() == pc->get_enemy_color(color)) {
-				// add to move vec
-				move_vec.push_back(tosq);
-			}
-		}
-	}
-
-	// handle king
+	} // sliding pieces
 	else if(type == PieceType::KING) {
+		// handle king
 
 		// walk over directions
 		for(arma::sword i = 0; i < move_directions.n_elem; i++) {
@@ -515,8 +469,62 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
                 */
 			}
 		}
-	}
+	} // king loop
+	// handle pawn
+	else if(type == PieceType::PAWN) {
 
+		// walk over directions
+		for(arma::sword i = 0; i < move_directions.n_elem; i++) {
+			arma::sword mydir = move_directions(i);
+			arma::uword tosq = sq120 + mydir;
+			assert(tosq < 120);
+			ShPiecePr to_pc = _board120[tosq];
+
+			// pawn moves
+			if(mydir == static_cast<arma::sword>(MoveDirections::UP) || mydir == static_cast<arma::sword>(MoveDirections::DOWN)) {
+
+				// cannot capture with up/down moves
+				if(to_pc->get_type() != PieceType::NONE)
+					continue;
+				else {
+					// add to move vec
+					move_vec.push_back(tosq);
+
+					// if moved then
+					// check first move for double step
+					// Exception: double pawn move on first turn
+					if(!pc->has_moved()) {
+						arma::sword mydir = move_directions(i);
+						arma::uword tosq = sq120 + mydir * 2;
+						assert(tosq < 120);
+						ShPiecePr to_pc = _board120[tosq];
+						if(to_pc->get_type() != PieceType::NONE) {
+							continue;
+						} else {
+							move_vec.push_back(tosq);
+						}
+					}
+				}
+			} // up/down moves
+
+			// pawn captures
+			if(to_pc->get_color() == pc->get_enemy_color(color)) {
+				// add to move vec
+				move_vec.push_back(tosq);
+			}
+			// Exception: en passant capture (enpassant)
+			EnPassantInfo enpassant_info = _enpassant_list.back();
+			if(enpassant_info.color == pc->get_enemy_color() && tosq == enpassant_info.square) {
+				// debug
+				COLLIDER_DEBUG("enpassant capture found ->");
+				std::cout << "En passant capture found: from " << get_algebraic_string(sq120, tosq) << " enpassant square: " << Extra::sq120to64(enpassant_info.square)
+						  << std::endl;
+				std::cout << _enpassant_list.size() << " enpassant squares in list." << std::endl;
+				for(auto info : _enpassant_list) { std::cout << "Enpassant square: " << info.square << std::endl; }
+				//collider_throw_line("enpassant capture found <-");
+			}
+		}
+	} // pawn
 	// shouldn't be here
 	else {
 		collider_throw_line("Invalid piece type for move generation.");
@@ -578,19 +586,30 @@ bool Board::move(std::string move_str) {
 	}
 
 	// check for enpassant and reset last enpassant square
-	arma::uword last_enpassant_sq = _enpassant_list.back();
-	_board120[last_enpassant_sq] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_sq));
-	arma::uword new_enpassant_sq = 0;
+	assert(!_enpassant_list.empty());
+	EnPassantInfo last_enpassant_info = _enpassant_list.back();
+	assert(last_enpassant_info.square < 120);
+	_board120[last_enpassant_info.square] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_info.square));
+	EnPassantInfo new_enpassant_info = { 0, PieceColor::NONE };
 	if(fr_pc->get_type() == PieceType::PAWN) {
 		// handle creation of new enpassant squares
 		arma::sword diff = to_sq120 - fr_sq120;
 		if(diff == static_cast<arma::sword>(MoveDirections::UP) * 2 || diff == static_cast<arma::sword>(MoveDirections::DOWN) * 2) {
 
-			//COLLIDER_DEBUG("enpassant square setting");
+			// debug
+			COLLIDER_DEBUG("enpassant square setting");
 			//std::cout << "En passant move detected: from " << frsq << " to " << tosq << std::endl;
 			//std::cout << "fr_sq120: " << fr_sq120 << ", to_sq120: " << to_sq120 << ", diff: " << diff << std::endl;
 			// set enpassant square
-			new_enpassant_sq = fr_sq120 + (diff / 2);
+			new_enpassant_info.square = fr_sq120 + (diff / 2);
+			new_enpassant_info.color = fr_pc->get_color();
+
+			assert(new_enpassant_info.square < 120);
+
+			// debug
+			std::cout << "Setting enpassant square: " << Extra::sq120to64(new_enpassant_info.square) << std::endl;
+			std::cout << "En passant info: square: " << Extra::sq120to64(new_enpassant_info.square) << ", color: " << Piece::get_color_string(new_enpassant_info.color)
+					  << std::endl;
 			//_board120[new_enpassant_sq] = Piece::create(fr_pc->get_color(), PieceType::NONE, Extra::sq120to64(new_enpassant_sq));
 		}
 	}
@@ -612,7 +631,7 @@ bool Board::move(std::string move_str) {
 	// add to move history
 	_move_history.push_back(move_str);
 	_captured_pieces.push_back(to_pc);
-	_enpassant_list.push_back(new_enpassant_sq);
+	_enpassant_list.push_back(new_enpassant_info);
 	//_castling_list.push_back(_can_castle);
 
 	// success
@@ -688,7 +707,8 @@ bool Board::unmove(std::string move_str) {
 	fr_pc->_move_count -= 1;
 
 	// unset enpassant square
-	arma::sword enpassant_sq = _enpassant_list.back();
+	EnPassantInfo last_enpassant_sq = _enpassant_list.back();
+	_enpassant_list.pop_back();
 
 	//debug
 	//	if(enpassant_sq != 0) {
