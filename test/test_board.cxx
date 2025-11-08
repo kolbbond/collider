@@ -77,6 +77,9 @@ int main(int argc, char** argv) {
 	// 4       197,281
 	// 5       4,865,609
 	// 6       119,060,324
+    // Notes: 
+    // 1       tests first move, double pawn moves
+    // 2       
 	cldr::ShEnginePr engine = cldr::Engine::create(board);
 	arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
 	arma::uword depth = 4;
