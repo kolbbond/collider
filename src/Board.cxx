@@ -55,7 +55,7 @@ void Board::init(std::string fen, ShLogPr lg) {
 	//////////////////////////////////////////////////
 
 	// walk over characters in fen
-	arma::uword rank = 0;
+	arma::uword rank = 7;
 	arma::uword file = 0;
 	arma::uword cnt = 0;
 	arma::uword num_chars = 0;
@@ -69,7 +69,7 @@ void Board::init(std::string fen, ShLogPr lg) {
 		// check if slash
 		if(c == '/') {
 			// next rank
-			rank++;
+			rank--;
 			file = 0;
 			continue;
 		}
@@ -101,9 +101,9 @@ void Board::init(std::string fen, ShLogPr lg) {
 		// check color
 		if(ptype != PieceType::NONE) {
 			if(isupper(c)) {
-				pcolor = PieceColor::BLACK;
-			} else {
 				pcolor = PieceColor::WHITE;
+			} else {
+				pcolor = PieceColor::BLACK;
 			}
 		}
 
@@ -523,8 +523,8 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 				//	for(auto info : _enpassant_list) { std::cout << "Enpassant square: " << info.square << std::endl; }
 				//collider_throw_line("enpassant capture found <-");
 
-                // add to move vec
-                move_vec.push_back(tosq);
+				// add to move vec
+				move_vec.push_back(tosq);
 			}
 		}
 	} // pawn

@@ -20,41 +20,82 @@ int main(int argc, char** argv) {
 	lg->msg("%s --- Running Perft Test --- %s\n", KPNK, KNRM);
 
 	// reset board
-    cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), lg);
+	cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), lg);
 
-	// run perft
+	// run perft on initial position
 	// https://www.chessprogramming.org/Perft
 	// depth   nodes
 	// 1       20
 	// 2       400
-	// 3       8,902
-	// 4       197,281
-	// 5       4,865,609
-	// 6       119,060,324
+	// 3       8902
+	// 4       197281
+	// 5       4865609
+	// 6       119060324
 
-    // Notes: learnings
-    // 1      double pawn move, basic movegen
-    // 2      above but for black
-    // 3      captures, pawn captures
-    // 4      checks
-    // 5      enpassant
-    // 6      castling
-    // 7      promotions???
-    // @hey: do we need to add an additional perft position?
-	cldr::ShEnginePr engine = cldr::Engine::create(board);
-	arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
-	arma::uword depth = 5;
-	for(arma::uword d = 1; d <= depth; d++) {
-		arma::uword num_nodes = engine->perft(d, lg);
+	// Notes: learnings
+	// 1      double pawn move, basic movegen
+	// 2      above but for black
+	// 3      captures, pawn captures
+	// 4      checks
+	// 5      enpassant
+	// 6      castling
+	// 7      promotions???
+	// @hey: do we need to add an additional perft position?
+	{
+		cldr::ShEnginePr engine = cldr::Engine::create(board);
+		arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
+		arma::uword depth = 4;
+		for(arma::uword d = 1; d <= depth; d++) {
+			arma::uword num_nodes = engine->perft(d, lg);
 
-		// check success and log
-		bool success = (num_nodes == perft_results(d - 1));
-		std::string str_color = success ? KGRN : KRED;
-		arma::sword diff = perft_results(d - 1) - num_nodes;
-		lg->msg("%sPerft to depth %llu: N %llu (expected %llu) (diff %d) %s\n", str_color.c_str(), d, num_nodes, perft_results(d - 1), diff, KNRM);
-		if(!success) {
-			board->display_board(lg);
-			collider_throw_line("Perft test failed.");
+			// check success and log
+			bool success = (num_nodes == perft_results(d - 1));
+			std::string str_color = success ? KGRN : KRED;
+			arma::sword diff = perft_results(d - 1) - num_nodes;
+			lg->msg("%sPerft to depth %llu: N %llu (expected %llu) (diff %d) %s\n", str_color.c_str(), d, num_nodes, perft_results(d - 1), diff, KNRM);
+			if(!success) {
+				board->display_board(lg);
+				collider_throw_line("Perft test failed.");
+			}
+		}
+	}
+
+	// run perft on position 2 (Kiwipete)
+	// https://www.chessprogramming.org/Perft_Results
+	// depth   nodes
+	// 1       48
+	// 2       2039
+	// 3       97862
+	// 4       4085603
+
+	// Notes: learnings
+	// 1      double pawn move, basic movegen
+	// 2      above but for black
+	// 3      captures, pawn captures
+	// 4      checks
+	// 5      enpassant
+	// 6      castling
+	// 7      promotions???
+	// @hey: do we need to add an additional perft position?
+	// new scope
+	{
+		std::string kiwipete_fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+		cldr::ShBoardPr board = cldr::Board::create(kiwipete_fen, lg);
+		cldr::ShEnginePr engine = cldr::Engine::create(board);
+		arma::Row<arma::uword> perft_results = { 48, 2039, 97862, 4085603 };
+		const arma::uword depth = 4;
+		for(arma::uword d = 1; d <= depth; d++) {
+			arma::uword num_nodes = engine->perft(d, lg);
+
+			// check success and log
+			bool success = (num_nodes == perft_results(d - 1));
+			std::string str_color = success ? KGRN : KRED;
+			arma::sword diff = perft_results(d - 1) - num_nodes;
+			lg->msg("%sPerft to depth %llu: N %llu (expected %llu) (diff %d) %s\n", str_color.c_str(), d, num_nodes, perft_results(d - 1), diff, KNRM);
+			if(!success) {
+				board->display_board(lg);
+				collider_throw_line("Perft test failed.");
+			}
 		}
 	}
 

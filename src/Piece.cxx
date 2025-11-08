@@ -61,17 +61,17 @@ char Piece::get_piece_char(PieceColor color, PieceType type) {
 	switch(type) {
 	case PieceType::NONE: c = '.'; break;
 	case PieceType::ENPASSANT: c = '*'; break;
-	case PieceType::PAWN: c = 'p'; break;
-	case PieceType::KNIGHT: c = 'n'; break;
-	case PieceType::BISHOP: c = 'b'; break;
-	case PieceType::ROOK: c = 'r'; break;
-	case PieceType::QUEEN: c = 'q'; break;
-	case PieceType::KING: c = 'k'; break;
+	case PieceType::PAWN: c = 'P'; break;
+	case PieceType::KNIGHT: c = 'N'; break;
+	case PieceType::BISHOP: c = 'B'; break;
+	case PieceType::ROOK: c = 'R'; break;
+	case PieceType::QUEEN: c = 'Q'; break;
+	case PieceType::KING: c = 'K'; break;
 	default: break;
 	}
 
 	// check color
-	if(color == PieceColor::BLACK) { c = toupper(c); }
+	if(color == PieceColor::BLACK) { c = tolower(c); }
 
 	return c;
 }
