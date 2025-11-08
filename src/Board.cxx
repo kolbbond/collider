@@ -219,7 +219,7 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 				// this move is invalid
 				moveidx(i) = 0;
 				COLLIDER_DEBUG("found a check");
-				//collider_throw_line("Check found in movelist generation.");
+				collider_throw_line("Check found in movelist generation.");
 			}
 		}
 
