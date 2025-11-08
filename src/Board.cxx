@@ -219,7 +219,7 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 			if(opp_to_type == PieceType::KING) {
 				// this move is invalid
 				moveidx(i) = 0;
-				COLLIDER_DEBUG("found a check");
+				//COLLIDER_DEBUG("found a check");
 				//collider_throw_line("Check found in movelist generation.");
 			}
 		}
@@ -516,12 +516,15 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 			EnPassantInfo enpassant_info = _enpassant_list.back();
 			if(enpassant_info.color == pc->get_enemy_color() && tosq == enpassant_info.square) {
 				// debug
-				COLLIDER_DEBUG("enpassant capture found ->");
-				std::cout << "En passant capture found: from " << get_algebraic_string(sq120, tosq) << " enpassant square: " << Extra::sq120to64(enpassant_info.square)
-						  << std::endl;
-				std::cout << _enpassant_list.size() << " enpassant squares in list." << std::endl;
-				for(auto info : _enpassant_list) { std::cout << "Enpassant square: " << info.square << std::endl; }
+				//	COLLIDER_DEBUG("enpassant capture found ->");
+				//	std::cout << "En passant capture found: from " << get_algebraic_string(sq120, tosq) << " enpassant square: " << Extra::sq120to64(enpassant_info.square)
+				//			  << std::endl;
+				//	std::cout << _enpassant_list.size() << " enpassant squares in list." << std::endl;
+				//	for(auto info : _enpassant_list) { std::cout << "Enpassant square: " << info.square << std::endl; }
 				//collider_throw_line("enpassant capture found <-");
+
+                // add to move vec
+                move_vec.push_back(tosq);
 			}
 		}
 	} // pawn
@@ -597,7 +600,7 @@ bool Board::move(std::string move_str) {
 		if(diff == static_cast<arma::sword>(MoveDirections::UP) * 2 || diff == static_cast<arma::sword>(MoveDirections::DOWN) * 2) {
 
 			// debug
-			COLLIDER_DEBUG("enpassant square setting");
+			//COLLIDER_DEBUG("enpassant square setting");
 			//std::cout << "En passant move detected: from " << frsq << " to " << tosq << std::endl;
 			//std::cout << "fr_sq120: " << fr_sq120 << ", to_sq120: " << to_sq120 << ", diff: " << diff << std::endl;
 			// set enpassant square
@@ -607,9 +610,9 @@ bool Board::move(std::string move_str) {
 			assert(new_enpassant_info.square < 120);
 
 			// debug
-			std::cout << "Setting enpassant square: " << Extra::sq120to64(new_enpassant_info.square) << std::endl;
-			std::cout << "En passant info: square: " << Extra::sq120to64(new_enpassant_info.square) << ", color: " << Piece::get_color_string(new_enpassant_info.color)
-					  << std::endl;
+			//std::cout << "Setting enpassant square: " << Extra::sq120to64(new_enpassant_info.square) << std::endl;
+			//std::cout << "En passant info: square: " << Extra::sq120to64(new_enpassant_info.square) << ", color: " << Piece::get_color_string(new_enpassant_info.color)
+			//<< std::endl;
 			//_board120[new_enpassant_sq] = Piece::create(fr_pc->get_color(), PieceType::NONE, Extra::sq120to64(new_enpassant_sq));
 		}
 	}

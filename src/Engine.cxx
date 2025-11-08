@@ -46,9 +46,9 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 
 	// debug
 	if(depth == 1) {
-		lg->msg("%sGenerated %llu moves for Perft(%llu)%s\n", KBLU, num_moves, depth, KNRM);
-		_board->display_movelist(lg);
-		_board->display_board(lg);
+		//lg->msg("%sGenerated %llu moves for Perft(%llu)%s\n", KBLU, num_moves, depth, KNRM);
+		//_board->display_movelist(lg);
+		//_board->display_board(lg);
 	}
 
 	// walk over moves
@@ -70,8 +70,8 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 		}
 
 		// increment count and recurse
-		nodes += perft(depth - 1, lg);
-		//nodes += perft(depth - 1);
+		//	nodes += perft(depth - 1, lg);
+		nodes += perft(depth - 1);
 
 		// unmove
 		if(!_board->unmove(movestr)) {
