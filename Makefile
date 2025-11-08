@@ -26,7 +26,7 @@ else
   RM := rm -rf
   CMAKE := $(shell (command -v cmake3 || command -v cmake || echo cmake))
   #CMAKE_GENERATOR ?= "$(shell (command -v ninja > /dev/null 2>&1 && echo "Ninja") || echo "Unix Makefiles")"
-  CMAKE_GENERATOR := Unix Makefiles
+  CMAKE_GENERATOR := "Ninja"
   define rmdir
     rm -rf $1
   endef
@@ -37,7 +37,7 @@ endif
 PARALLEL := --parallel 16
 
 #CMAKE_FLAGS := -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)
-CMAKE_FLAGS := -DCMAKE_BUILD_TYPE=Debug
+CMAKE_FLAGS := -DCMAKE_BUILD_TYPE=Release
 
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MAKEFILE_DIR  := $(dir $(MAKEFILE_PATH))

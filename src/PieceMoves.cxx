@@ -10,23 +10,16 @@
 namespace cldr {
 
 // get base move directions for a piece type and color
-arma::Row<arma::sword> PieceMoves::get_moves(PieceType type, PieceColor color){
-    switch(type){
-        case PieceType::PAWN:
-            return PieceMoves::get_pawn_moves(color);
-        case PieceType::KNIGHT:
-            return PieceMoves::get_knight_moves();
-        case PieceType::BISHOP:
-            return PieceMoves::get_bishop_moves();
-        case PieceType::ROOK:
-            return PieceMoves::get_rook_moves();
-        case PieceType::QUEEN:
-            return PieceMoves::get_queen_moves();
-        case PieceType::KING:
-            return PieceMoves::get_king_moves();
-        default:
-            collider_throw_line("Invalid piece type for move generation.");
-    }
+arma::Row<arma::sword> PieceMoves::get_moves(PieceType type, PieceColor color) {
+	switch(type) {
+	case PieceType::PAWN: return PieceMoves::get_pawn_moves(color);
+	case PieceType::KNIGHT: return PieceMoves::get_knight_moves();
+	case PieceType::BISHOP: return PieceMoves::get_bishop_moves();
+	case PieceType::ROOK: return PieceMoves::get_rook_moves();
+	case PieceType::QUEEN: return PieceMoves::get_queen_moves();
+	case PieceType::KING: return PieceMoves::get_king_moves();
+	default: collider_throw_line("Invalid piece type for move generation.");
+	}
 }
 
 arma::Row<arma::sword> PieceMoves::get_pawn_moves(PieceColor color) {
@@ -92,7 +85,7 @@ arma::Row<arma::sword> PieceMoves::get_rook_moves() {
     return arma::Row<arma::sword>{ 
         static_cast<arma::sword>(MoveDirections::UP),
         static_cast<arma::sword>(MoveDirections::RIGHT),
-        static_cast<arma::sword>(MoveDirections::DOWNLEFT),
+        static_cast<arma::sword>(MoveDirections::DOWN),
         static_cast<arma::sword>(MoveDirections::LEFT)
     };
 	// clang-format on
@@ -103,5 +96,10 @@ arma::Row<arma::sword> PieceMoves::get_queen_moves() { return PieceMoves::get_ki
 arma::Row<arma::sword> PieceMoves::get_king_moves() {
 	// king is combination of rook and bishop one step
 	return arma::join_horiz(PieceMoves::get_rook_moves(), PieceMoves::get_bishop_moves());
+}
+
+arma::Row<arma::sword> PieceMoves::get_castling_moves() {
+    // castling is 2 moves right and 3 moves left regardless of color
+	return arma::Row<arma::sword>{ static_cast<arma::sword>(MoveDirections::RIGHT) * 2, static_cast<arma::sword>(MoveDirections::LEFT) * 3 };
 }
 } // namespace cldr

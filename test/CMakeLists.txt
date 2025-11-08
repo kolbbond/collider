@@ -6,10 +6,14 @@ message(STATUS "testing")
 set(test_list 
     test_template.cxx
     test_board.cxx
-    test_board_gui.cxx
+    test_perft.cxx
     test_uci.cxx
 )
+if(ENABLE_GUI)
+    set(test_list ${test_list} 
+        test_board_gui.cxx)
 
+endif()
 
 # walk over source files
 foreach(srcfile ${test_list})

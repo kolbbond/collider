@@ -3,6 +3,7 @@
 
 #include "Log.hxx"
 #include "collider.hxx"
+#include <armadillo>
 #include <memory>
 #include <vector>
 #include "typedefs.hh"
@@ -25,6 +26,9 @@ protected:
 	bool _moved = false;
 
 	u64 _bitboard;
+
+public:
+	arma::uword _move_count = 0;
 
 public:
 	Piece();

@@ -18,6 +18,6 @@ public:
 	void set_board(ShBoardPr board) { _board = board; }
 
 	// https://www.chessprogramming.org/Perft
-	arma::uword perft(arma::uword depth);
+	arma::uword perft(arma::uword depth,cldr::ShLogPr lg = cldr::NullLog::create());
 };
 } // namespace cldr

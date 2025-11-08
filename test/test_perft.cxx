@@ -16,57 +16,11 @@ int main(int argc, char** argv) {
 	cldr::ShLogPr lg = cldr::Log::create();
 	lg->msg("%s --- Test Template: %s%s --- %s\n", KPNK, __DATE__, __TIME__, KNRM);
 
-	// create board
-	cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), lg);
-
-	// show board
-	board->display_board(lg);
-
-	// update movelist
-	board->update_movelist();
-
-	// display movelist
-	board->display_movelist(lg);
-
-	// get movelist
-	arma::Mat<arma::uword> movelist = board->get_movelist();
-
-	// debug
-	std::cout << "Movelist:\n" << movelist << std::endl;
-
-	// movelist should be what size?
-	// 2 moves per pawn plus 2 per knight
-	// 2*8*2 + 2*2*2 = 40
-	assert(movelist.n_cols == 20);
-
-	// move a piece
-	board->move("e2e4");
-
-	// update movelist
-	board->update_movelist();
-
-	// show board
-	board->display_board(lg);
-
-	// display movelist
-	board->display_movelist(lg);
-
-	// this should fail
-	assert(!board->move("e2e4"));
-
-	board->move("g8f6");
-
-	board->display_board(lg);
-
-	// update and display movelist
-	board->update_movelist();
-	board->display_movelist(lg);
-
 	// run perft test
 	lg->msg("%s --- Running Perft Test --- %s\n", KPNK, KNRM);
 
 	// reset board
-	board = cldr::Board::create(cldr::Board::start_fen(), lg);
+    cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), lg);
 
 	// run perft
 	// https://www.chessprogramming.org/Perft
@@ -79,7 +33,7 @@ int main(int argc, char** argv) {
 	// 6       119,060,324
 	cldr::ShEnginePr engine = cldr::Engine::create(board);
 	arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
-	arma::uword depth = 4;
+	arma::uword depth = 5;
 	for(arma::uword d = 1; d <= depth; d++) {
 		arma::uword num_nodes = engine->perft(d, lg);
 

@@ -30,6 +30,14 @@ public:
 	// castling rights
 	std::array<bool, 2> _can_castle;
 
+	// enpassant squares
+	std::vector<arma::uword> _enpassant_list = { 0 };
+	//arma::uword _enpassant_square;
+
+	// store made moves for unmove
+	std::vector<std::string> _move_history;
+	std::vector<ShPiecePr> _captured_pieces;
+
 	// log
 	ShLogPr _lg = NullLog::create();
 
@@ -49,6 +57,8 @@ public:
 	//bool unmove(arma::uword frsq, arma::uword tosq);
 	void update(ShLogPr lg = NullLog::create());
 	void update_movelist(ShLogPr lg = NullLog::create());
+	void update_movelist(arma::uword depth, ShLogPr lg = NullLog::create());
+	arma::Mat<arma::uword> create_movelist(arma::uword depth, ShLogPr lg = NullLog::create());
 
 	void set_log(ShLogPr lg);
 	arma::Row<arma::uword> get_moves(arma::uword sq120);

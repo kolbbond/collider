@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # enables
-option(ENABLE_GUI "build with smg" ON)
+option(ENABLE_GUI "build with smg" OFF)
 
 # ensure out of core build
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
@@ -54,6 +54,19 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 else()
 	message(STATUS "Compiler not recognized")
 endif()
+
+# Add a custom build type 
+set(CMAKE_CXX_FLAGS_RELWITHASSERTS "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_RELWITHASSERTS    "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "" FORCE)
+
+# Ensure no -DNDEBUG sneaks in
+string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHASSERTS "${CMAKE_CXX_FLAGS_RELWITHASSERTS}")
+string(REPLACE "-DNDEBUG" "" CMAKE_C_FLAGS_RELWITHASSERTS    "${CMAKE_C_FLAGS_RELWITHASSERTS}")
+
+# Make the type known
+#set(CMAKE_BUILD_TYPE "RelWithAsserts" CACHE STRING "" FORCE)
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel;RelWithAsserts")
+set(CMAKE_BUILD_TYPE "RelWithAsserts" CACHE STRING "Build type" FORCE)
 
 # output paths
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY AND NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
@@ -121,7 +134,9 @@ list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake")
 list(INSERT CMAKE_PREFIX_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake/SDL2")
 list(INSERT CMAKE_MODULE_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake")
 list(INSERT CMAKE_MODULE_PATH 0 "/usr/lib/x86_64-linux-gnu/cmake/SDL2/")
-
+message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+message(STATUS "DEPS_PREFIX: ${DEPS_PREFIX}")
 
 # find SDL2
 find_package(SDL2 REQUIRED)
@@ -143,9 +158,10 @@ if(NOT TARGET Arma::Armadillo)
 		INTERFACE_LINK_LIBRARIES "${ARMADILLO_LIBRARY}")
 
 	# set (n)debug flags for Armadilo
-	if(CMAKE_BUILD_TYPE STREQUAL Release)
+	if(CMAKE_BUILD_TYPE STREQUAL Release OR CMAKE_BUILD_TYPE STREQUAL RelWithAsserts)
 		message(STATUS "Using Armadillo no-debug flags (conformance check disabled!)")
-		target_compile_definitions(Arma::Armadillo INTERFACE -DNDEBUG -DARMA_NO_DEBUG -DARMA_DONT_CHECK_CONFORMANCE -DARMA_WARN_LEVEL=1)
+        #target_compile_definitions(Arma::Armadillo INTERFACE -DNDEBUG -DARMA_NO_DEBUG -DARMA_DONT_CHECK_CONFORMANCE -DARMA_WARN_LEVEL=1)
+        target_compile_definitions(Arma::Armadillo INTERFACE -DARMA_NO_DEBUG -DARMA_DONT_CHECK_CONFORMANCE -DARMA_WARN_LEVEL=1)
 	else()
 		message(STATUS "Using Armadillo in debug mode")
 	endif()
@@ -185,10 +201,15 @@ target_link_libraries(collider
     chug::chug
     Arma::Armadillo
 
-    SDL2
-    SDL2_image
-    smg::smg
 )
+
+if(ENABLE_GUI)
+    target_link_libraries(collider
+        SDL2
+        SDL2_image
+        smg::smg
+    )
+endif()
 
 target_include_directories(collider PUBLIC
 include

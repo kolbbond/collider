@@ -12,5 +12,6 @@ public:
 	static arma::Row<arma::sword> get_rook_moves();
 	static arma::Row<arma::sword> get_queen_moves();
 	static arma::Row<arma::sword> get_king_moves();
+	static arma::Row<arma::sword> get_castling_moves();
 };
 } // namespace cldr

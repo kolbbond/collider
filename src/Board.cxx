@@ -3,6 +3,7 @@
 #include "Board.hxx"
 #include "debug.hxx"
 #include "PieceMoves.hxx"
+#include "error.hxx"
 #include "typedefs.hh"
 
 namespace cldr {
@@ -163,8 +164,105 @@ void Board::init(std::string fen, ShLogPr lg) {
 
 void Board::update(ShLogPr lg) { update_movelist(lg); }
 
-// update valid moves
+// overload for depth=1? @hey: or just change the default value of depth in the function signature?
+// don't want to have two default arguments???
 void Board::update_movelist(ShLogPr lg) {
+	const arma::uword depth = 1;
+	update_movelist(depth, lg);
+}
+
+// update valid moves
+void Board::update_movelist(arma::uword depth, ShLogPr lg) {
+
+	// early exit
+	if(depth == 0) { return; }
+
+	arma::Mat<arma::uword> movelist = create_movelist(1, lg);
+	assert(movelist.n_rows == 2); // should be from and to rows
+
+	// check for checks
+	// naively seems like make the move, check if there is a king capture, unmove?
+	arma::Row<arma::uword> moveidx(movelist.n_cols, arma::fill::ones); // assume all valid
+
+	// walk moves
+	for(arma::uword i = 0; i < movelist.n_cols; i++) {
+
+		// this move
+		arma::uword fr_sq120 = movelist(0, i);
+		arma::uword to_sq120 = movelist(1, i);
+		std::string movestr = get_algebraic_string(fr_sq120, to_sq120);
+
+		// move
+		if(!move(movestr)) { lg->msg("%sError moving move: %s%s\n", KRED, movestr.c_str(), KNRM); }
+
+		// generate movelist for opponent
+
+		const arma::uword depth_check = 1;
+		arma::Mat<arma::uword> checklist = create_movelist(depth_check, lg);
+		assert(checklist.n_rows == 2); // should be from and to rows
+		assert(!checklist.is_empty());
+
+		// walk checklist and check for king captures
+		for(arma::uword j = 0; j < checklist.n_cols; j++) {
+
+			//debug
+			//std::cout << "Checking opponent move: \n" << checklist.col(j).t() << std::endl;
+
+			// this opp move
+			arma::uword opp_fr_sq120 = checklist(0, j);
+			arma::uword opp_to_sq120 = checklist(1, j);
+
+			// check piece on to square
+			ShPiecePr opp_to_pc = get_piece(opp_to_sq120);
+			PieceType opp_to_type = opp_to_pc->get_type();
+			if(opp_to_type == PieceType::KING) {
+				// this move is invalid
+				moveidx(i) = 0;
+				COLLIDER_DEBUG("found a check");
+				//collider_throw_line("Check found in movelist generation.");
+			}
+		}
+
+		// unmove
+		if(!unmove(movestr)) { lg->msg("%sError unmoving move: %s%s\n", KRED, movestr.c_str(), KNRM); }
+	}
+	// shorten movelist
+	movelist = movelist.cols(arma::find(moveidx == 1));
+
+	// debug check movelist
+	arma::uword num_moves = movelist.n_cols;
+	arma::Row<arma::uword> movehash = arma::Row<arma::uword>(num_moves, arma::fill::zeros);
+	movehash = movelist.row(0) * 100 + movelist.row(1);
+	arma::Row<arma::uword> unique_movehash = arma::unique(movehash);
+	assert(unique_movehash.n_elem == num_moves); // check for duplicates
+	if(unique_movehash.n_elem != num_moves) {
+		// check for duplicates
+		collider_throw_line("Duplicate moves found in movelist generation.");
+	}
+
+	// set
+	_movelist = movelist;
+
+	// debug if enpassant
+	for(arma::uword i = 0; i < movelist.n_cols; i++) {
+		arma::uword to_sq120 = movelist(1, i);
+		ShPiecePr to_pc = get_piece(to_sq120);
+		if(to_pc->get_type() == PieceType::ENPASSANT) { std::cout << "Enpassant move found: " << get_algebraic_string(movelist(0, i), movelist(1, i)) << std::endl; }
+		if(to_pc->get_type() == PieceType::KING) {
+			std::cout << "King move found: " << get_algebraic_string(movelist(0, i), movelist(1, i)) << std::endl;
+			collider_throw_line("King move found in movelist generation, should not happen.");
+		}
+		display_movelist(lg);
+		display_board(lg);
+		//collider_throw_line("enpassant");
+	}
+}
+
+// creates movelist without check checking
+arma::Mat<arma::uword> Board::create_movelist(arma::uword depth, ShLogPr lg) {
+
+	// early exit
+	if(depth == 0) { return arma::Mat<arma::uword>(); }
 
 	// allocate movelist
 	std::vector<arma::uword> from_vec;
@@ -172,7 +270,7 @@ void Board::update_movelist(ShLogPr lg) {
 
 	// walk over squares
 	// @hey: if we had just the pieces we won't need a full loop
-	//       probably not an issue???
+	//       probably not an issue? it's 8x8?
 	for(arma::uword r = 0; r < 8; r++) {
 		for(arma::uword f = 0; f < 8; f++) {
 
@@ -184,6 +282,8 @@ void Board::update_movelist(ShLogPr lg) {
 			PieceType type = pc->get_type();
 			PieceColor color = pc->get_color();
 			if(type == PieceType::NONE) continue;
+			if(type == PieceType::ENPASSANT) continue;
+			if(type == PieceType::OFFBOARD) continue;
 			if(color != get_turn()) continue;
 
 			// generate possible moves for this piece at this square
@@ -195,8 +295,8 @@ void Board::update_movelist(ShLogPr lg) {
 		}
 	}
 
-	// convert to arma::Mat
-	_movelist = arma::join_vert(arma::Row<arma::uword>(from_vec), arma::Row<arma::uword>(to_vec));
+	// return
+	return arma::join_vert(arma::Row<arma::uword>(from_vec), arma::Row<arma::uword>(to_vec));
 }
 
 void Board::set_color(PieceColor color) { _color = color; }
@@ -205,7 +305,7 @@ PieceColor Board::get_turn() const { return get_color(); }
 bool Board::is_turn(PieceColor color) const { return color == get_turn(); }
 bool Board::can_castle(PieceColor color) const {
 	// check early
-	if(color != PieceColor::WHITE || color != PieceColor::BLACK) collider_throw_line("board color should only be white/black");
+	if(!(color != PieceColor::WHITE || color != PieceColor::BLACK)) collider_throw_line("board color should only be white/black");
 
 	// check color
 	if(color == PieceColor::WHITE)
@@ -224,10 +324,11 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 
 	// early exit
 	if(type == PieceType::NONE) { return arma::Row<arma::uword>(); }
+	//if(type == PieceType::ENPASSANT) { return arma::Row<arma::uword>(); }
+	if(type == PieceType::OFFBOARD) { return arma::Row<arma::uword>(); }
 
 	// get base move directions
 	arma::Row<arma::sword> move_directions = PieceMoves::get_moves(type, color);
-
 
 	// allocate output
 	arma::Row<arma::uword> moves;
@@ -251,14 +352,26 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 			// check if offboard
 			if(to_pc->get_type() == PieceType::OFFBOARD) continue;
 
-			// check if same color
-			if(to_pc->get_color() == color) continue;
-
 			// if opposite color it is a capture
-			if(to_pc->get_color() == pc->get_enemy_color(color)) { move_vec.push_back(tosq); }
+			if(to_pc->get_color() == pc->get_enemy_color(color)) {
+				move_vec.push_back(tosq);
+				continue;
+			}
 
 			// if empty square also good
-			if(to_pc->get_color() == PieceColor::NONE) { move_vec.push_back(tosq); }
+			if(to_pc->get_color() == PieceColor::NONE) {
+				move_vec.push_back(tosq);
+				continue;
+			}
+
+			// if enpassant is good
+			if(to_pc->get_type() == PieceType::ENPASSANT) {
+				move_vec.push_back(tosq);
+				continue;
+			}
+
+			// check if same color
+			if(to_pc->get_color() == color) continue;
 		}
 	}
 
@@ -271,6 +384,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 			// walk until failure
 			arma::uword step = 1;
 			for(;;) {
+				//COLLIDER_DEBUG("loop");
 				arma::sword mydir = move_directions(i);
 				arma::uword tosq = sq120 + mydir * step;
 				assert(tosq < 120);
@@ -279,9 +393,6 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 				// check if offboard
 				if(to_pc->get_type() == PieceType::OFFBOARD) break;
 
-				// check if same color
-				if(to_pc->get_color() == color) break;
-
 				// if opposite color it is a capture
 				if(to_pc->get_color() == pc->get_enemy_color()) {
 					move_vec.push_back(tosq);
@@ -289,15 +400,26 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 				}
 
 				// if empty square also good
-				if(to_pc->get_color() == PieceColor::NONE) { move_vec.push_back(tosq); }
+				if(to_pc->get_color() == PieceColor::NONE) {
+					move_vec.push_back(tosq);
+					// step
+					step++;
+					continue;
+				}
 
-				// step
-				step++;
+				// if enpassant is good
+				if(to_pc->get_type() == PieceType::ENPASSANT) {
+					move_vec.push_back(tosq);
+					// step
+					step++;
+					continue;
+				}
+
+				// check if same color
+				if(to_pc->get_color() == color) break;
 			}
 		}
 	}
-
-	// Exceptions: pawn first move, en passant, castling, king moving into check
 
 	// handle pawn
 	else if(type == PieceType::PAWN) {
@@ -321,6 +443,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 
 					// if moved then
 					// check first move for double step
+					// Exception: double pawn move on first turn
 					if(!pc->has_moved()) {
 						arma::sword mydir = move_directions(i);
 						arma::uword tosq = sq120 + mydir * 2;
@@ -333,9 +456,20 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 						}
 					}
 				}
+			}
 
-				// pawn captures
-				if(to_pc->get_color() == pc->get_enemy_color(color) || to_pc->get_type() == PieceType::ENPASSANT) {
+			// pawn captures
+			// Exception: en passant capture (enpassant)
+			if(to_pc->get_color() == pc->get_enemy_color(color)) {
+				if(mydir != static_cast<arma::sword>(MoveDirections::UP) || mydir != static_cast<arma::sword>(MoveDirections::DOWN)) {
+                    // debug enpassant
+					//if(to_pc->get_type() == PieceType::ENPASSANT) {
+						//std::printf("Enpassant capture detected at sq120: %llu\n", tosq);
+						//COLLIDER_DEBUG("enpassant capture");
+						//		display_movelist(_lg);
+						//		display_board(_lg);
+					//}
+
 					// add to move vec
 					move_vec.push_back(tosq);
 				}
@@ -356,27 +490,64 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 			// check if offboard
 			if(to_pc->get_type() == PieceType::OFFBOARD) continue;
 
+			// if enpassant is good
+			//if(to_pc->get_type() == PieceType::ENPASSANT) {
+			//move_vec.push_back(tosq);
+			//continue;
+			//}
+
 			// check if same color
 			if(to_pc->get_color() == color) continue;
 
 			// if opposite color it is a capture
-			if(to_pc->get_color() == pc->get_enemy_color(color)) { move_vec.push_back(tosq); }
+			if(to_pc->get_color() == pc->get_enemy_color(color)) {
+				move_vec.push_back(tosq);
+				continue;
+			}
 
 			// if empty square
-			// @hey: check if moving into check
+			// @NOTE: we check for checks in the update_movelist() function, this assumes the move is valid
 			if(to_pc->get_color() == PieceColor::NONE) {
-				// @TODO: need to generate movelist for opposing color
-				// or make this move then generate movelist for opposing color
-				// to check if it is a capture
 
 				// add the move
 				move_vec.push_back(tosq);
+
+				// Exceptions:  castling
+				/*
+				if(can_castle(pc->get_color())) {
+					//	arma::Row<arma::sword> move_castling = PieceMoves::get_castling_moves();
+
+					// set castling move
+					arma::sword mydir2 = mydir == static_cast<arma::sword>(MoveDirections::RIGHT) ? mydir * 2 : mydir * 3;
+					arma::uword tosq = sq120 + mydir;
+					ShPiecePr to_pc = _board120[tosq];
+
+					//assert(tosq < 120);
+					if(tosq >= 120) collider_throw_line("Invalid castling move: tosq out of bounds.");
+
+					// check if offboard
+					if(to_pc->get_type() == PieceType::OFFBOARD) continue;
+
+					// check if same color
+					if(to_pc->get_color() == color) continue;
+
+					// if opposite color can't castle
+					if(to_pc->get_color() == pc->get_enemy_color(color)) continue;
+
+					// if empty square
+					// @NOTE: we check for checks in the update_movelist() function, this assumes the move is valid
+					if(to_pc->get_color() == PieceColor::NONE) {
+						COLLIDER_DEBUG("think we can castle");
+
+						// add the move
+						move_vec.push_back(tosq);
+
+						// @hey: how do we denote castling so we can move the rook too?
+					}
+				}
+                */
 			}
 		}
-
-		// castling?
-
-
 	}
 
 	// shouldn't be here
@@ -412,14 +583,16 @@ bool Board::move(std::string move_str) {
 	arma::uword to_sq120 = Extra::rf2sq120(to_rank, to_file);
 
 	// debug
-	std::printf("From square: %s, To square: %s\n", frsq.c_str(), tosq.c_str());
-	std::printf("fr_rank: %llu, fr_file: %llu\n", fr_rank, fr_file);
-	std::printf("to_rank: %llu, to_file: %llu\n", to_rank, to_file);
-	std::printf("fr_sq120: %llu, to_sq120: %llu\n", fr_sq120, to_sq120);
+	//	std::printf("Checking new move: \n");
+	//	std::printf("From square: %s, To square: %s\n", frsq.c_str(), tosq.c_str());
+	//	std::printf("fr_rank: %llu, fr_file: %llu\n", fr_rank, fr_file);
+	//	std::printf("to_rank: %llu, to_file: %llu\n", to_rank, to_file);
+	//	std::printf("fr_sq120: %llu, to_sq120: %llu\n", fr_sq120, to_sq120);
 
 	// check if move is valid
 	if(!is_valid(fr_sq120, to_sq120)) {
 		_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
+		//collider_throw_line("Invalid move attempted.");
 		return false;
 	}
 
@@ -428,15 +601,38 @@ bool Board::move(std::string move_str) {
 	ShPiecePr to_pc = _board120[to_sq120];
 
 	assert(fr_pc->get_type() != PieceType::NONE);
+	assert(fr_pc->get_type() != PieceType::ENPASSANT);
+	assert(fr_pc->get_type() != PieceType::OFFBOARD);
+
 	if(to_pc->get_color() == fr_pc->get_enemy_color() && to_pc->get_type() != PieceType::NONE) {
-		_lg->msg("%sCapturing piece: %c at square %s%s\n", KRED, to_pc->get_piece_char(), tosq.c_str(), KNRM);
+		// @hey: debug statements should probably not be colored...
+		//_lg->msg("%sCapturing piece: %c at square %s%s\n", KRED, to_pc->get_piece_char(), tosq.c_str(), KNRM);
 		to_pc->set_alive(false);
+	}
+
+	// check for enpassant and reset last enpassant square
+	arma::uword last_enpassant_sq = _enpassant_list.back();
+	_board120[last_enpassant_sq] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_sq));
+	arma::uword new_enpassant_sq = 0;
+	if(fr_pc->get_type() == PieceType::PAWN) {
+		arma::sword diff = to_sq120 - fr_sq120;
+		if(diff == static_cast<arma::sword>(MoveDirections::UP) * 2 || diff == static_cast<arma::sword>(MoveDirections::DOWN) * 2) {
+
+			//COLLIDER_DEBUG("enpassant square setting");
+			//std::cout << "En passant move detected: from " << frsq << " to " << tosq << std::endl;
+			//std::cout << "fr_sq120: " << fr_sq120 << ", to_sq120: " << to_sq120 << ", diff: " << diff << std::endl;
+			// set enpassant square
+			new_enpassant_sq = fr_sq120 + (diff / 2);
+			_board120[new_enpassant_sq] = Piece::create(fr_pc->get_color(), PieceType::ENPASSANT, Extra::sq120to64(new_enpassant_sq));
+		}
 	}
 
 	// move piece finally
 	_board120[to_sq120] = fr_pc;
 	fr_pc->set_pos(to_rank, to_file);
 	fr_pc->set_moved(true);
+	fr_pc->_move_count += 1;
+
 	_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
 
 	// switch color
@@ -445,14 +641,27 @@ bool Board::move(std::string move_str) {
 	else
 		set_color(PieceColor::WHITE);
 
+	// add to move history
+	_move_history.push_back(move_str);
+	_captured_pieces.push_back(to_pc);
+	_enpassant_list.push_back(new_enpassant_sq);
+	//_castling_list.push_back(_can_castle);
+
 	// success
 	return true;
 }
+
 // move in UCI format, e.g. e2e4
+// @hey: should we only allow unmoving the last move in the history?
+//       remove the input argument?
 bool Board::unmove(std::string move_str) {
 
 	// parse move
 	assert(move_str.length() == 4 || move_str.length() == 5); //
+
+	// check that move is the last move in the history
+	assert(!_move_history.empty());
+	assert(move_str == _move_history.back());
 
 	// get first two chars
 	std::string frsq = move_str.substr(2, move_str.length() - 1);
@@ -469,38 +678,67 @@ bool Board::unmove(std::string move_str) {
 	arma::uword to_sq120 = Extra::rf2sq120(to_rank, to_file);
 
 	// debug
-	std::printf("From square: %s, To square: %s\n", frsq.c_str(), tosq.c_str());
-	std::printf("fr_rank: %llu, fr_file: %llu\n", fr_rank, fr_file);
-	std::printf("to_rank: %llu, to_file: %llu\n", to_rank, to_file);
-	std::printf("fr_sq120: %llu, to_sq120: %llu\n", fr_sq120, to_sq120);
+	//	std::printf("Checking unmove: \n");
+	//	std::printf("From square: %s, To square: %s\n", frsq.c_str(), tosq.c_str());
+	//	std::printf("fr_rank: %llu, fr_file: %llu\n", fr_rank, fr_file);
+	//	std::printf("to_rank: %llu, to_file: %llu\n", to_rank, to_file);
+	//	std::printf("fr_sq120: %llu, to_sq120: %llu\n", fr_sq120, to_sq120);
 
+	// unmove can just check the move_history list?
 	// check if move is valid
-	if(!is_valid(fr_sq120, to_sq120)) {
-		_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
-		return false;
-	}
+	//if(!is_valid(fr_sq120, to_sq120)) {
+
+	//	_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
+	//	return false;
+	//}
 
 	// check piece on from square
 	ShPiecePr fr_pc = _board120[fr_sq120];
 	ShPiecePr to_pc = _board120[to_sq120];
 
-	assert(fr_pc->get_type() != PieceType::NONE);
-	if(to_pc->get_color() == fr_pc->get_enemy_color() && to_pc->get_type() != PieceType::NONE) {
-		_lg->msg("%sCapturing piece: %c at square %s%s\n", KRED, to_pc->get_piece_char(), tosq.c_str(), KNRM);
-		to_pc->set_alive(false);
+	// check not trying to move an empty square
+	if(fr_pc->get_type() == PieceType::NONE || fr_pc->get_type() == PieceType::OFFBOARD || to_pc->get_type() == PieceType::ENPASSANT) {
+		display_board(_lg);
+		collider_throw_line("Trying to unmove an empty square.");
 	}
+
+	// unmove should never be capturing...
+	//	if(to_pc->get_color() == fr_pc->get_enemy_color() && to_pc->get_type() != PieceType::NONE) {
+	//		_lg->msg("%sCapturing piece: %c at square %s%s\n", KRED, to_pc->get_piece_char(), tosq.c_str(), KNRM);
+	//		to_pc->set_alive(false);
+	//	}
 
 	// move piece finally
 	_board120[to_sq120] = fr_pc;
 	fr_pc->set_pos(to_rank, to_file);
 	fr_pc->set_moved(true);
-	_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
+	fr_pc->_move_count -= 1;
+
+	// get the captured piece from the last move
+	to_pc = _captured_pieces.back();
+	_captured_pieces.pop_back();
+	//_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
+	_board120[fr_sq120] = to_pc;
+	to_pc->set_alive(true);
+	to_pc->set_pos(fr_rank, fr_file);
 
 	// switch color
 	if(get_color() == PieceColor::WHITE)
 		set_color(PieceColor::BLACK);
 	else
 		set_color(PieceColor::WHITE);
+
+	// pop off the last move from the history
+	_move_history.pop_back();
+
+	// unset enpassant square
+	arma::sword enpassant_sq = _enpassant_list.back();
+	//debug
+	if(enpassant_sq != 0) {
+		//	std::printf("Unsetting enpassant square: %llu\n", enpassant_sq);
+		_board120[enpassant_sq] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(enpassant_sq));
+	}
+	_enpassant_list.pop_back();
 
 	// success
 	return true;
@@ -509,8 +747,11 @@ bool Board::unmove(std::string move_str) {
 // check if move is valid
 bool Board::is_valid(arma::uword fr_sq120, arma::uword to_sq120) {
 
-	// get valid moves in this position
+	// get possible moves in this position
 	arma::Row<arma::uword> valid_moves = get_moves(fr_sq120);
+
+	// flag
+	bool valid = false;
 
 	// check valid moves
 	for(arma::uword i = 0; i < valid_moves.n_elem; i++) {
@@ -518,7 +759,7 @@ bool Board::is_valid(arma::uword fr_sq120, arma::uword to_sq120) {
 	}
 
 	// default
-	return false;
+	return valid;
 }
 
 
@@ -556,12 +797,7 @@ void Board::display_board(ShLogPr lg) {
 	// header
 	lg->newl();
 	lg->msg("\t%s --- %sCollider V2%s --- %s\n", KCYN, KORG, KCYN, KNRM);
-	lg->msg("\t%s --- Current Move: %s%s%s --- %s\n",
-		KCYN,
-		get_color_color(get_color()).c_str(),
-		get_color_string(get_color()).c_str(),
-		KCYN,
-		KNRM);
+	lg->msg("\t%s --- Current Move: %s%s%s --- %s\n", KCYN, get_color_color(get_color()).c_str(), get_color_string(get_color()).c_str(), KCYN, KNRM);
 
 	// get 64 board
 	std::array<ShPiecePr, 64> board64 = get_board64();
