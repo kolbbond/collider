@@ -243,7 +243,7 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 	// set
 	_movelist = movelist;
 
-	// debug if enpassant
+	// debug loop
 	for(arma::uword i = 0; i < movelist.n_cols; i++) {
 		arma::uword to_sq120 = movelist(1, i);
 		ShPiecePr to_pc = get_piece(to_sq120);
@@ -251,8 +251,8 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 			std::cout << "King move found: " << get_algebraic_string(movelist(0, i), movelist(1, i)) << std::endl;
 			collider_throw_line("King move found in movelist generation, should not happen.");
 		}
-		display_movelist(lg);
-		display_board(lg);
+		//display_movelist(lg);
+		//display_board(lg);
 		//collider_throw_line("enpassant");
 	}
 }
@@ -444,11 +444,8 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 			// pawn captures
 			// Exception: en passant capture (enpassant)
 			if(to_pc->get_color() == pc->get_enemy_color(color)) {
-				if(mydir != static_cast<arma::sword>(MoveDirections::UP) || mydir != static_cast<arma::sword>(MoveDirections::DOWN)) {
-
-					// add to move vec
-					move_vec.push_back(tosq);
-				}
+				// add to move vec
+				move_vec.push_back(tosq);
 			}
 		}
 	}

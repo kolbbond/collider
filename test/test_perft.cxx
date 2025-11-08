@@ -31,9 +31,19 @@ int main(int argc, char** argv) {
 	// 4       197,281
 	// 5       4,865,609
 	// 6       119,060,324
+
+    // Notes: learnings
+    // 1      double pawn move, basic movegen
+    // 2      above but for black
+    // 3      captures, pawn captures
+    // 4      checks
+    // 5      enpassant
+    // 6      castling
+    // 7      promotions???
+    // @hey: do we need to add an additional perft position?
 	cldr::ShEnginePr engine = cldr::Engine::create(board);
 	arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
-	arma::uword depth = 3;
+	arma::uword depth = 5;
 	for(arma::uword d = 1; d <= depth; d++) {
 		arma::uword num_nodes = engine->perft(d, lg);
 
