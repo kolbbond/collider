@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     // @hey: do we need to add an additional perft position?
 	cldr::ShEnginePr engine = cldr::Engine::create(board);
 	arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
-	arma::uword depth = 4;
+	arma::uword depth = 5;
 	for(arma::uword d = 1; d <= depth; d++) {
 		arma::uword num_nodes = engine->perft(d, lg);
 
