@@ -24,7 +24,8 @@
 //}
 
 arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
-	// early exit
+
+	// early exit and counter
 	if(depth == 0) { return 1; }
 
 	assert(_board != NULL);
@@ -46,6 +47,11 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 
 	// debug
 	if(depth == 1) {
+		// get stats
+		PerftStats stats = _board->get_perft_stats(lg);
+		//_total_stats = _total_stats + stats;
+		_total_stats += stats; // with overloaded +=
+
 		//lg->msg("%sGenerated %llu moves for Perft(%llu)%s\n", KBLU, num_moves, depth, KNRM);
 		//_board->display_movelist(lg);
 		//_board->display_board(lg);
@@ -63,6 +69,23 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 		// debug
 		//std::printf("Move %llu: %s\n", i, movestr.c_str());
 
+		// get stats
+		//		PerftStats stats = _board->get_perft_stats(lg);
+		//        total_stats.nodes += stats.nodes;
+		//        total_stats.captures += stats.captures;
+		//        total_stats.castles += stats.castles;
+
+		// display perft stats
+		//		lg->msg("%sPerft(%llu): %llu nodes, %llu captures, %llu enpassant, %llu castles, %llu promotions%s\n",
+		//			KBLU,
+		//			depth,
+		//			stats.nodes,
+		//			stats.captures,
+		//			stats.enpassant,
+		//			stats.castles,
+		//			stats.promotions,
+		//			KNRM);
+
 		// make move
 		if(!_board->move(movestr)) {
 			_board->display_board(lg);
@@ -79,6 +102,18 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 			collider_throw_line("Invalid unmove attempted.");
 		}
 	}
+
+	// display perft stats
+	lg->msg("%sTotal Perft(%llu): N(%llu), Captures(%llu), Enpassant(%llu),  Castles(%llu), Promotions(%llu), Checks(%llu), ...%s\n",
+		KGRN,
+		depth,
+		_total_stats.nodes,
+		_total_stats.captures,
+		_total_stats.enpassants,
+		_total_stats.castles,
+		_total_stats.promotions,
+		_total_stats.checks,
+		KNRM);
 
 	// timer and log
 	const double time_elapsed = timer.toc();

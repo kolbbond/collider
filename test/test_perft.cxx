@@ -18,9 +18,8 @@ int main(int argc, char** argv) {
 
 	// run perft test
 	lg->msg("%s --- Running Perft Test --- %s\n", KPNK, KNRM);
+	lg->msg("%s --- Starting Position --- %s\n", KBLU, KNRM);
 
-	// reset board
-	cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), lg);
 
 	// run perft on initial position
 	// https://www.chessprogramming.org/Perft
@@ -42,10 +41,12 @@ int main(int argc, char** argv) {
 	// 7      promotions???
 	// @hey: do we need to add an additional perft position?
 	{
-		cldr::ShEnginePr engine = cldr::Engine::create(board);
 		arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
 		arma::uword depth = 4;
 		for(arma::uword d = 1; d <= depth; d++) {
+			// reset board
+			cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), lg);
+			cldr::ShEnginePr engine = cldr::Engine::create(board);
 			arma::uword num_nodes = engine->perft(d, lg);
 
 			// check success and log
@@ -78,13 +79,14 @@ int main(int argc, char** argv) {
 	// 7      promotions???
 	// @hey: do we need to add an additional perft position?
 	// new scope
+	lg->msg("%s --- Kiwipete Position --- %s\n", KBLU, KNRM);
 	{
 		std::string kiwipete_fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-		cldr::ShBoardPr board = cldr::Board::create(kiwipete_fen, lg);
-		cldr::ShEnginePr engine = cldr::Engine::create(board);
 		arma::Row<arma::uword> perft_results = { 48, 2039, 97862, 4085603 };
-		const arma::uword depth = 4;
+		const arma::uword depth = 2;
 		for(arma::uword d = 1; d <= depth; d++) {
+			cldr::ShBoardPr board = cldr::Board::create(kiwipete_fen, lg);
+			cldr::ShEnginePr engine = cldr::Engine::create(board);
 			arma::uword num_nodes = engine->perft(d, lg);
 
 			// check success and log

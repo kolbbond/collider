@@ -10,6 +10,9 @@ class Engine {
 public:
 	ShBoardPr _board;
 
+	// perft stats to sum
+	PerftStats _total_stats;
+
 public:
 	Engine();
 	Engine(ShBoardPr board) { set_board(board); }
