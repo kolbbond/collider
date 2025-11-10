@@ -124,7 +124,24 @@ void Board::init(std::string fen, ShLogPr lg) {
 
 		// insert into board
 		//_board64[Extra::rf2sq64(rank, file)] = Piece::create(pcolor, ptype, rank, file);
-		_board120[Extra::rf2sq120(rank, file)] = Piece::create(pcolor, ptype, rank, file);
+		ShPiecePr new_piece = Piece::create(pcolor, ptype, rank, file);
+		_board120[Extra::rf2sq120(rank, file)] = new_piece;
+
+
+		if(new_piece->get_type() == PieceType::PAWN) {
+            // check if pawn already moved
+			if(pcolor == PieceColor::WHITE && rank != 1) {
+				new_piece->set_moved(true);
+                new_piece->_move_count++;
+				//    _enpassant_list.push_back({ Extra::rf2sq120(rank - 1, file), pcolor });
+			} else if(pcolor == PieceColor::BLACK && rank != 6) {
+				//   _enpassant_list.push_back({ Extra::rf2sq120(rank + 1, file), pcolor });
+				new_piece->set_moved(true);
+                new_piece->_move_count++;
+			}
+
+		// if pawn check for double move and set enpassant square
+		}
 
 		// increment
 		cnt++;
@@ -162,6 +179,11 @@ void Board::init(std::string fen, ShLogPr lg) {
 
 	// time and log out
 	lg->msg("%sBoard initialized in %.3f [ms].%s\n", KGRN, timer.toc() * 1e3, KNRM);
+}
+
+std::string Board::create_fen(ShLogPr lg) const {
+	// create fen
+	return "";
 }
 
 void Board::update(ShLogPr lg) { update_movelist(lg); }

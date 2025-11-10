@@ -115,6 +115,7 @@ public:
 	void update_movelist(arma::uword depth, ShLogPr lg = NullLog::create());
 	arma::Mat<arma::uword> create_movelist(arma::uword depth, ShLogPr lg = NullLog::create());
 
+	std::string create_fen(ShLogPr lg = NullLog::create()) const;
 	void set_log(ShLogPr lg);
 	arma::Row<arma::uword> get_moves(arma::uword sq120);
 	arma::Mat<arma::uword> get_movelist() const;
