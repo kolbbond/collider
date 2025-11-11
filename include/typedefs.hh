@@ -1,6 +1,8 @@
 //DEFINITIONS
 #pragma once
 
+#include <armadillo>
+#include <type_traits>
 #define NAME "Collider 0.2"
 #define SQNUM 120
 #define SCREEN_HEIGHT 600
@@ -20,8 +22,8 @@ using u64 = unsigned long long;
 using s64 = signed long long;
 
 // @hey: offboard or enpassant doesn't seem to fit here
-enum class PieceType : u64 { NONE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, OFFBOARD, ENPASSANT };
-enum class PieceColor : u64 { NONE, WHITE, BLACK };
+enum class PieceType : arma::uword { PAWN = 0, KNIGHT, BISHOP, ROOK, QUEEN, KING, OFFBOARD, ENPASSANT, NONE = 99 };
+enum class PieceColor : u64 { WHITE = 0, BLACK, NONE };
 enum class MoveDirections : s64 {
 	LEFT = -1,
 	UPLEFT = 9,
@@ -46,6 +48,15 @@ enum class MoveDirections : s64 {
 	BREAK = 99
 };
 
+// casting template helper
+template <typename T>
+constexpr auto to_underlying(T e) noexcept {
+	return static_cast<std::underlying_type_t<T>>(e);
+}
+
+// rank and file enums
+enum { FILE_A = 0, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H };
+enum { RANK_1 = 0, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8 };
 
 // scores
 enum class PieceValue : u64 { NOVAL = 0, PVAL = 100, NVAL = 300, BVAL = 350, RVAL = 500, QVAL = 1000, KVAL = 99999 };

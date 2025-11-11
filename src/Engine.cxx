@@ -62,9 +62,10 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 		const arma::Col<arma::uword> mymove = movelist.col(i);
 		const arma::uword frsq = mymove(0);
 		const arma::uword tosq = mymove(1);
+		const PieceType promo = static_cast<PieceType>(mymove(2));
 
 		// in algebraic notation
-		const std::string movestr = _board->get_algebraic_string(frsq, tosq);
+		const std::string movestr = _board->get_algebraic_string(frsq, tosq, promo);
 
 		// debug
 		//std::printf("Move %llu: %s\n", i, movestr.c_str());

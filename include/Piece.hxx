@@ -16,8 +16,8 @@ class Piece {
 
 
 protected:
-	PieceType _type;
-	PieceColor _color;
+	PieceType _type = PieceType::NONE;
+	PieceColor _color = PieceColor::NONE;
 
 	// linear position 64 squares
 	u64 _pos;

@@ -56,5 +56,24 @@ public:
 	}
 	static inline char rank2char(u64 rank) { return rank + '1'; }
 	static inline char file2char(u64 file) { return file + 'a'; }
+
+	static inline PieceType char2promo(char c) {
+		switch(tolower(c)) {
+		case 'q': return PieceType::QUEEN;
+		case 'r': return PieceType::ROOK;
+		case 'b': return PieceType::BISHOP;
+		case 'n': return PieceType::KNIGHT;
+		default: return PieceType::NONE;
+		}
+	}
+    static inline char promo2char(PieceType promo) {
+        switch(promo) {
+        case PieceType::QUEEN: return 'q';
+        case PieceType::ROOK: return 'r';
+        case PieceType::BISHOP: return 'b';
+        case PieceType::KNIGHT: return 'n';
+        default: return '\0';
+        }
+    }
 };
 } // namespace cldr

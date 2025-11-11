@@ -18,8 +18,10 @@ int main(int argc, char** argv) {
 
 	// run perft test
 	lg->msg("%s --- Running Perft Test --- %s\n", KPNK, KNRM);
-	lg->msg("%s --- Starting Position --- %s\n", KBLU, KNRM);
 
+	const bool run_position1 = true;
+	const bool run_position2 = true;
+	const bool run_position4 = true;
 
 	// run perft on initial position
 	// https://www.chessprogramming.org/Perft
@@ -40,7 +42,8 @@ int main(int argc, char** argv) {
 	// 6      castling
 	// 7      promotions???
 	// @hey: do we need to add an additional perft position?
-	{
+	if(run_position1) {
+		lg->msg("%s --- Starting Position --- %s\n", KBLU, KNRM);
 		arma::Row<arma::uword> perft_results = { 20, 400, 8902, 197281, 4865609, 119060324 };
 		arma::uword depth = 4;
 		for(arma::uword d = 1; d <= depth; d++) {
@@ -60,6 +63,7 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
+	lg->newl();
 
 	// run perft on position 2 (Kiwipete)
 	// https://www.chessprogramming.org/Perft_Results
@@ -79,8 +83,8 @@ int main(int argc, char** argv) {
 	// 7      promotions???
 	// @hey: do we need to add an additional perft position?
 	// new scope
-	lg->msg("%s --- Kiwipete Position --- %s\n", KBLU, KNRM);
-	{
+	if(run_position2) {
+		lg->msg("%s --- Kiwipete Position --- %s\n", KBLU, KNRM);
 		std::string kiwipete_fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 		arma::Row<arma::uword> perft_results = { 48, 2039, 97862, 4085603 };
 		const arma::uword depth = 3;
@@ -100,6 +104,32 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
+	lg->newl();
+
+	//////////////////////////////////////////////////
+	// Position 4 (as there are promotions on depth 2)
+	if(run_position4) {
+		lg->msg("%s --- Position 4 --- %s\n", KBLU, KNRM);
+		std::string position4_fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+		arma::Row<arma::uword> perft_results = { 6, 264, 9467, 422333 };
+		const arma::uword depth = 3;
+		for(arma::uword d = 1; d <= depth; d++) {
+			cldr::ShBoardPr board = cldr::Board::create(position4_fen, lg);
+			cldr::ShEnginePr engine = cldr::Engine::create(board);
+			arma::uword num_nodes = engine->perft(d, lg);
+
+			// check success and log
+			bool success = (num_nodes == perft_results(d - 1));
+			std::string str_color = success ? KGRN : KRED;
+			arma::sword diff = perft_results(d - 1) - num_nodes;
+			lg->msg("%sPerft to depth %llu: N %llu (expected %llu) (diff %d) %s\n", str_color.c_str(), d, num_nodes, perft_results(d - 1), diff, KNRM);
+			if(!success) {
+				board->display_board(lg);
+				collider_throw_line("Perft test failed.");
+			}
+		}
+	}
+	lg->newl();
 
 	// timer and log out
 	lg->msg("%s --- Test Time Elapsed: %0.2f --- %s\n", KCYN, timer.toc(), KNRM);

@@ -64,6 +64,14 @@ class Board {
 	//std::map<PieceColor, std::map<CastlingSide, bool>> _castling_rights = { { PieceColor::WHITE, { { CastlingSide::KINGSIDE, true }, { CastlingSide::QUEENSIDE, true } } },
 	//	{ PieceColor::BLACK, { { CastlingSide::KINGSIDE, true }, { CastlingSide::QUEENSIDE, true } } } };
 
+	// move struct
+	struct Move {
+		arma::uword from_square;
+		arma::uword to_square;
+		PieceType promotion_type = PieceType::NONE;
+		Move(arma::uword from, arma::uword to, PieceType promo = PieceType::NONE) : from_square(from), to_square(to), promotion_type(promo) {}
+	};
+
 
 public:
 	// board storage using Piece class
@@ -87,6 +95,9 @@ public:
 	std::vector<EnPassantInfo> _enpassant_list = { { 0, PieceColor::NONE } };
 	//arma::uword _enpassant_square;
 
+	// promotions
+	static constexpr std::array<PieceType, 4> _promo_types = { PieceType::QUEEN, PieceType::ROOK, PieceType::BISHOP, PieceType::KNIGHT };
+
 	// store made moves for unmove
 	std::vector<std::string> _move_history;
 	std::vector<ShPiecePr> _captured_pieces;
@@ -95,6 +106,10 @@ public:
 	ShLogPr _lg = NullLog::create();
 
 	// timers
+
+	// bools
+	bool _debug_movelist = true;
+	bool _include_underpromotions = true;
 
 public:
 	Board();
@@ -139,7 +154,7 @@ public:
 	void display_movelist(ShLogPr lg = NullLog::create());
 	std::string get_color_string(PieceColor color) const;
 	std::string get_color_color(PieceColor color) const;
-	std::string get_algebraic_string(arma::uword frsq, arma::uword tosq) const;
+	std::string get_algebraic_string(arma::uword frsq, arma::uword tosq, PieceType promo = PieceType::NONE) const;
 
 	PerftStats get_perft_stats(ShLogPr lg = NullLog::create());
 
