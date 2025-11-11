@@ -214,6 +214,7 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 		std::vector<std::string> move_strings;
 		for(arma::uword i = 0; i < num_moves; i++) {
 			std::string move_str = get_algebraic_string(movelist(0, i), movelist(1, i), static_cast<PieceType>(movelist(2, i)));
+			assert(move_str.length() == 4 || move_str.length() == 5); // should be in format e2e4 or e7e8q
 			move_strings.push_back(move_str);
 		}
 
@@ -252,6 +253,9 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 		}
 	}
 
+	// check for checkmates
+	if(movelist.n_cols == 0) { lg->msg("%sNo valid moves found, checkmate or stalemate.%s\n", KRED, KNRM); }
+
 	// set
 	_movelist = movelist;
 }
@@ -273,7 +277,13 @@ bool Board::check_for_check(arma::Col<arma::uword> movecol, ShLogPr lg) {
 		arma::uword fr_sq120 = movecol(0);
 		arma::uword to_sq120 = movecol(1);
 		PieceType promo = static_cast<PieceType>(movecol(2));
+		assert(fr_sq120 < 120 && to_sq120 < 120);
 		movestr = get_algebraic_string(fr_sq120, to_sq120, promo);
+		assert(movestr.length() == 4 || movestr.length() == 5); // should be in format e2e4 or e7e8q
+		assert(movestr.back() != '\0');
+		assert(movestr.find('\0') == std::string::npos);
+		//std::cout << "fr and to squares: " << fr_sq120 << ", " << to_sq120 << std::endl;
+		//std::cout << "Checking for check with move: " << movestr << std::endl;
 		if(!move(movestr)) { lg->msg("%sError moving move: %s%s\n", KRED, movestr.c_str(), KNRM); }
 	} else {
 		switch_color();
@@ -321,6 +331,7 @@ void Board::check_for_checks(arma::Mat<arma::uword>& movelist, ShLogPr lg) {
 
 	// check input
 	assert(movelist.n_rows == 3); // should be from, to, promo rows
+	assert(!movelist.is_empty());
 
 	//////////////////////////////////////////////////
 	// check for checks
@@ -335,7 +346,18 @@ void Board::check_for_checks(arma::Mat<arma::uword>& movelist, ShLogPr lg) {
 		arma::uword to_sq120 = movelist(1, i);
 		PieceType promo = static_cast<PieceType>(movelist(2, i));
 
+		assert(fr_sq120 < 120 && to_sq120 < 120);
+		//assert(fr_sq120 != 0 && to_sq120 != 0);
+		assert(fr_sq120 != 0);
+		// FIX: there are some moves that have to_sq120 == 0, which is invalid. This is likely a bug in the move generation. For now, we will just skip these moves.
+		if(to_sq120 == 0) {
+			// why is there a 0 here?
+			moveidx(i) = 0;
+			continue;
+		}
+
 		std::string movestr = get_algebraic_string(fr_sq120, to_sq120, promo);
+		assert(movestr.length() == 4 || movestr.length() == 5); // should be in format e2e4 or e7e8q
 
 		// if the piece is a king, we need to check for checks on the intermediate square as well
 		if(get_piece(fr_sq120)->get_type() == PieceType::KING) {
@@ -351,10 +373,10 @@ void Board::check_for_checks(arma::Mat<arma::uword>& movelist, ShLogPr lg) {
 			}
 		}
 
+
 		// check if move results in check
 		arma::Col<arma::uword> movecol = { fr_sq120, to_sq120, to_underlying(promo) };
 		if(check_for_check(movecol, _lg)) { moveidx(i) = 0; }
-
 		// move
 		//		if(!move(movestr)) { lg->msg("%sError moving move: %s%s\n", KRED, movestr.c_str(), KNRM); }
 		//
@@ -390,6 +412,9 @@ void Board::check_for_checks(arma::Mat<arma::uword>& movelist, ShLogPr lg) {
 	}
 	// shorten movelist
 	movelist = movelist.cols(arma::find(moveidx == 1));
+
+	assert(movelist.n_rows == 3); // should be from, to, promo rows
+	//assert(movelist.n_cols > 0); // should have at least one move // @hey: or it's checkmate!
 
 	// return
 	return;
@@ -428,6 +453,8 @@ arma::Mat<arma::uword> Board::create_movelist(arma::uword depth, ShLogPr lg) {
 			// generate possible moves for this piece at this square
 			arma::Row<arma::uword> moves = get_moves(sq120);
 			arma::Row<arma::uword> promos(moves.n_elem, arma::fill::value(to_underlying(PieceType::NONE))); // default no promotions
+
+			assert(!arma::any(moves == 0));
 
 			// add promotion moves
 			bool add_promo = false;
@@ -474,6 +501,10 @@ arma::Mat<arma::uword> Board::create_movelist(arma::uword depth, ShLogPr lg) {
 // return possible to squares in 120 index
 arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 
+	assert(sq120 < 120);
+	assert(sq120 > 0);
+	assert(sq120 != 0);
+
 	// check piece
 	ShPiecePr pc = _board120[sq120];
 	PieceType type = pc->get_type();
@@ -501,9 +532,11 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 			arma::sword mydir = move_directions(i);
 			arma::uword tosq = sq120 + mydir;
 			assert(tosq < 120);
+			//assert(tosq != 0);
 			ShPiecePr to_pc = _board120[tosq];
 
 			//std::cout << "Knight move to sq120: " << tosq << " which is (" << Extra::sq120to64(tosq) << ") and has piece: " << to_pc->get_piece_char() << std::endl;
+			if(tosq == 0) { assert(to_pc->get_type() == PieceType::OFFBOARD); }
 
 			// check if offboard
 			if(to_pc->get_type() == PieceType::OFFBOARD) continue;
@@ -538,6 +571,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 				arma::sword mydir = move_directions(i);
 				arma::uword tosq = sq120 + mydir * step;
 				assert(tosq < 120);
+				assert(tosq != 0);
 				ShPiecePr to_pc = _board120[tosq];
 
 				// check if offboard
@@ -570,6 +604,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 			arma::sword mydir = move_directions(i);
 			arma::uword tosq = sq120 + mydir;
 			assert(tosq < 120);
+			assert(tosq != 0);
 			ShPiecePr to_pc = _board120[tosq];
 
 			// check if offboard
@@ -606,6 +641,8 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 						// set castling move
 						arma::sword mydir2 = mydir * 2;
 						arma::uword tosq = sq120 + mydir2;
+						assert(tosq < 120);
+						assert(tosq != 0);
 						ShPiecePr to_pc = _board120[tosq];
 
 						// check directions
@@ -654,6 +691,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 			arma::sword mydir = move_directions(i);
 			arma::uword tosq = sq120 + mydir;
 			assert(tosq < 120);
+			assert(tosq != 0);
 			ShPiecePr to_pc = _board120[tosq];
 
 			// pawn moves
@@ -673,6 +711,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 						arma::sword mydir = move_directions(i);
 						arma::uword tosq = sq120 + mydir * 2;
 						assert(tosq < 120);
+						assert(tosq != 0);
 						ShPiecePr to_pc = _board120[tosq];
 						if(to_pc->get_type() != PieceType::NONE) {
 							continue;
@@ -711,6 +750,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 
 	// convert to arma and return
 	moves = arma::Row<arma::uword>(move_vec);
+	assert(!arma::any(moves == 0));
 	return moves;
 }
 
@@ -740,7 +780,21 @@ bool Board::move(std::string move_str) {
 	// check if move is valid
 	if(!is_valid(fr_sq120, to_sq120)) {
 		_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
-		//collider_throw_line("Invalid move attempted.");
+		COLLIDER_DEBUG("Invalid move attempted.");
+
+		assert(move_str.find('\0') == std::string::npos);
+		std::cout << "move list: \n" << _movelist.t() << std::endl;
+		for(unsigned char c : move_str) std::cout << "[" << c << "]";
+		std::cout << "\n";
+		std::cout << "Move string: (" << move_str << ")" << std::endl;
+		std::cout << "move string length: " << move_str.length() << std::endl;
+		std::cout << "From: " << frsq << " To: " << tosq << " Promo: " << Extra::promo2char(promo) << std::endl;
+		std::cout << "From sq120: " << fr_sq120 << " To sq120: " << to_sq120 << std::endl;
+		std::cout << "piece type on from square: " << _board120[fr_sq120]->get_piece_char() << std::endl;
+		display_movelist(_lg);
+		display_board(_lg);
+		collider_throw_line("Invalid move attempted.");
+		std::cout << "piece type on to square: " << _board120[to_sq120]->get_piece_char() << std::endl;
 		return false;
 	}
 
@@ -764,9 +818,12 @@ bool Board::move(std::string move_str) {
 	assert(!_enpassant_list.empty());
 	EnPassantInfo last_enpassant_info = _enpassant_list.back();
 	assert(last_enpassant_info.square < 120);
+	//assert(last_enpassant_info.square != 0);
 	EnPassantInfo new_enpassant_info = { 0, PieceColor::NONE };
 	if(fr_pc->get_type() == PieceType::PAWN) {
-		_board120[last_enpassant_info.square] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_info.square));
+
+		if(!(last_enpassant_info.square == 0))
+			_board120[last_enpassant_info.square] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_info.square));
 
 		// handle creation of new enpassant squares
 		arma::sword diff = to_sq120 - fr_sq120;
@@ -1163,6 +1220,7 @@ void Board::display_movelist(ShLogPr lg) {
 
 		// pad
 		std::string move_str = get_algebraic_string(frsq, tosq, promo);
+		assert(move_str.length() == 4 || move_str.length() == 5); // should be in format e2e4 or e7e8q
 		if(move_str.length() == 4) { move_str += " "; }
 
 		// log
@@ -1182,6 +1240,11 @@ void Board::display_movelist(ShLogPr lg) {
 // assumes sq120
 std::string Board::get_algebraic_string(arma::uword frsq, arma::uword tosq, PieceType promo) const {
 	// check squares
+	assert(frsq < 120);
+	assert(tosq < 120);
+	assert(frsq != tosq);
+	assert(frsq != 0);
+	assert(tosq != 0);
 
 	// get rank and file for both fr/to squares
 	arma::uword fr_rank = Extra::get_rank120(frsq);
@@ -1192,6 +1255,8 @@ std::string Board::get_algebraic_string(arma::uword frsq, arma::uword tosq, Piec
 	// construct string
 	//char str[4] = { Extra::file2char(fr_file), Extra::rank2char(fr_rank), Extra::file2char(to_file), Extra::rank2char(to_rank) };
 	std::string move_str = { Extra::file2char(fr_file), Extra::rank2char(fr_rank), Extra::file2char(to_file), Extra::rank2char(to_rank) };
+	assert(move_str.length() == 4); // should be in format e2e4
+	assert(move_str[move_str.length() - 1] != '\0');
 
 	// add promotion if needed
 	if(promo != PieceType::NONE) {
@@ -1203,6 +1268,9 @@ std::string Board::get_algebraic_string(arma::uword frsq, arma::uword tosq, Piec
 		default: break;
 		}
 	}
+
+	assert(move_str[move_str.length() - 1] != '\0');
+	assert(move_str.length() == 4 || move_str.length() == 5); // should be in format e2e4 or e7e8q
 
 	// cast and return
 	//return std::string(str);
@@ -1233,7 +1301,31 @@ PerftStats Board::get_perft_stats(ShLogPr lg) {
 	PerftStats stats;
 	stats.nodes = _movelist.n_cols;
 
-	assert(!_movelist.is_empty());
+	//assert(!_movelist.is_empty());
+	// check for checkmates
+	if(_movelist.is_empty()) {
+		stats.checkmates++;
+		//	stats.nodes++;
+		return stats;
+	}
+
+	// check for checks
+	// create movelist of possible moves
+	arma::Mat<arma::uword> movelist = create_movelist(1, lg);
+	if(movelist.is_empty()) {
+		COLLIDER_DEBUG("No moves left after creating movelist, this is a checkmate.");
+		stats.checkmates++;
+		return stats;
+	}
+	assert(movelist.n_rows == 3); // should be from and to rows
+	check_for_checks(movelist, lg);
+	if(movelist.is_empty()) {
+		COLLIDER_DEBUG("No moves left after pruning for checks, this is a checkmate.");
+		stats.checkmates++;
+		return stats;
+	}
+
+	//if(_movelist.n_cols == 0) stats.checkmates++;
 	assert(_movelist.n_rows == 3);
 
 	// walk movelist and count stats
@@ -1244,6 +1336,7 @@ PerftStats Board::get_perft_stats(ShLogPr lg) {
 		arma::uword tosq = mymove(1);
 		PieceType promo = static_cast<PieceType>(mymove(2));
 		std::string move_str = get_algebraic_string(frsq, tosq, promo);
+		assert(move_str.length() == 4 || move_str.length() == 5); // should be in format e2e4 or e7e8q
 
 		// pieces involved
 		ShPiecePr frpc = _board120[frsq];

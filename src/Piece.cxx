@@ -47,9 +47,7 @@ PieceType Piece::get_type() const { return _type; }
 
 
 bool Piece::is_alive() const { return _alive; }
-bool Piece::has_moved() const {
-    return _move_count;
-}
+bool Piece::has_moved() const { return _move_count; }
 
 char Piece::get_piece_char() const { return get_piece_char(_color, _type); }
 char Piece::get_piece_char(PieceColor color, PieceType type) {
@@ -59,6 +57,7 @@ char Piece::get_piece_char(PieceColor color, PieceType type) {
 
 	// get type
 	switch(type) {
+	case PieceType::OFFBOARD: c = '!'; break;
 	case PieceType::NONE: c = '.'; break;
 	case PieceType::ENPASSANT: c = '*'; break;
 	case PieceType::PAWN: c = 'P'; break;

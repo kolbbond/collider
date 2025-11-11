@@ -1,4 +1,5 @@
 #include "Engine.hxx"
+#include "debug.hxx"
 #include "error.hxx"
 #include <armadillo>
 
@@ -66,6 +67,7 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 
 		// in algebraic notation
 		const std::string movestr = _board->get_algebraic_string(frsq, tosq, promo);
+		assert(movestr.length() == 4 || movestr.length() == 5); // should be in format e2e4 or e7e8q
 
 		// debug
 		//std::printf("Move %llu: %s\n", i, movestr.c_str());
@@ -105,7 +107,7 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 	}
 
 	// display perft stats
-	lg->msg("%sTotal Perft(%llu): N(%llu), Captures(%llu), Enpassant(%llu),  Castles(%llu), Promotions(%llu), Checks(%llu), ...%s\n",
+	lg->msg("%sTotal Perft(%llu): N(%llu), Captures(%llu), Enpassant(%llu),  Castles(%llu), Promotions(%llu), Checks(%llu), Checkmates(%llu), ...%s\n",
 		KGRN,
 		depth,
 		_total_stats.nodes,
@@ -114,6 +116,7 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 		_total_stats.castles,
 		_total_stats.promotions,
 		_total_stats.checks,
+		_total_stats.checkmates,
 		KNRM);
 
 	// timer and log

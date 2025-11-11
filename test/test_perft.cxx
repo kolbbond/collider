@@ -19,8 +19,8 @@ int main(int argc, char** argv) {
 	// run perft test
 	lg->msg("%s --- Running Perft Test --- %s\n", KPNK, KNRM);
 
-	const bool run_position1 = true;
-	const bool run_position2 = true;
+	const bool run_position1 = false;
+	const bool run_position2 = false;
 	const bool run_position4 = true;
 
 	// run perft on initial position
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 		lg->msg("%s --- Position 4 --- %s\n", KBLU, KNRM);
 		std::string position4_fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
 		arma::Row<arma::uword> perft_results = { 6, 264, 9467, 422333 };
-		const arma::uword depth = 3;
+		const arma::uword depth = 4;
 		for(arma::uword d = 1; d <= depth; d++) {
 			cldr::ShBoardPr board = cldr::Board::create(position4_fen, lg);
 			cldr::ShEnginePr engine = cldr::Engine::create(board);
