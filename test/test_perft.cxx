@@ -19,8 +19,9 @@ int main(int argc, char** argv) {
 	// run perft test
 	lg->msg("%s --- Running Perft Test --- %s\n", KPNK, KNRM);
 
-	const bool run_position1 = false;
-	const bool run_position2 = false;
+	const bool run_position1 = true;
+	const bool run_position2 = true;
+	const bool run_position3 = true;
 	const bool run_position4 = true;
 
 	// run perft on initial position
@@ -84,10 +85,34 @@ int main(int argc, char** argv) {
 	// @hey: do we need to add an additional perft position?
 	// new scope
 	if(run_position2) {
-		lg->msg("%s --- Kiwipete Position --- %s\n", KBLU, KNRM);
+		lg->msg("%s --- Position 2 (Kiwipete) --- %s\n", KBLU, KNRM);
 		std::string kiwipete_fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 		arma::Row<arma::uword> perft_results = { 48, 2039, 97862, 4085603 };
 		const arma::uword depth = 3;
+		for(arma::uword d = 1; d <= depth; d++) {
+			cldr::ShBoardPr board = cldr::Board::create(kiwipete_fen, lg);
+			cldr::ShEnginePr engine = cldr::Engine::create(board);
+			arma::uword num_nodes = engine->perft(d, lg);
+
+			// check success and log
+			bool success = (num_nodes == perft_results(d - 1));
+			std::string str_color = success ? KGRN : KRED;
+			arma::sword diff = perft_results(d - 1) - num_nodes;
+			lg->msg("%sPerft to depth %llu: N %llu (expected %llu) (diff %d) %s\n", str_color.c_str(), d, num_nodes, perft_results(d - 1), diff, KNRM);
+			if(!success) {
+				board->display_board(lg);
+				collider_throw_line("Perft test failed.");
+			}
+		}
+	}
+	lg->newl();
+
+	// position 3
+	if(run_position3) {
+		lg->msg("%s --- Position 3 --- %s\n", KBLU, KNRM);
+		std::string kiwipete_fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 ";
+		arma::Row<arma::uword> perft_results = { 14, 191, 2812, 43238 };
+		const arma::uword depth = 4;
 		for(arma::uword d = 1; d <= depth; d++) {
 			cldr::ShBoardPr board = cldr::Board::create(kiwipete_fen, lg);
 			cldr::ShEnginePr engine = cldr::Engine::create(board);

@@ -46,12 +46,21 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 	const arma::Mat<arma::uword> movelist = _board->get_movelist();
 	const arma::uword num_moves = movelist.n_cols;
 
+	// check for empty movelist
+	if(num_moves == 0) {
+		COLLIDER_DEBUG("No moves left, this is a checkmate.");
+		//		return 0;
+	}
+
 	// debug
 	if(depth == 1) {
 		// get stats
 		PerftStats stats = _board->get_perft_stats(lg);
-		//_total_stats = _total_stats + stats;
 		_total_stats += stats; // with overloaded +=
+
+		//COLLIDER_DEBUG("perft depth (1)");
+		_board->display_movelist(lg);
+		_board->display_board(lg);
 
 		//lg->msg("%sGenerated %llu moves for Perft(%llu)%s\n", KBLU, num_moves, depth, KNRM);
 		//_board->display_movelist(lg);
@@ -69,25 +78,6 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 		const std::string movestr = _board->get_algebraic_string(frsq, tosq, promo);
 		assert(movestr.length() == 4 || movestr.length() == 5); // should be in format e2e4 or e7e8q
 
-		// debug
-		//std::printf("Move %llu: %s\n", i, movestr.c_str());
-
-		// get stats
-		//		PerftStats stats = _board->get_perft_stats(lg);
-		//        total_stats.nodes += stats.nodes;
-		//        total_stats.captures += stats.captures;
-		//        total_stats.castles += stats.castles;
-
-		// display perft stats
-		//		lg->msg("%sPerft(%llu): %llu nodes, %llu captures, %llu enpassant, %llu castles, %llu promotions%s\n",
-		//			KBLU,
-		//			depth,
-		//			stats.nodes,
-		//			stats.captures,
-		//			stats.enpassant,
-		//			stats.castles,
-		//			stats.promotions,
-		//			KNRM);
 
 		// make move
 		if(!_board->move(movestr)) {
@@ -96,7 +86,7 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 		}
 
 		// increment count and recurse
-		//	nodes += perft(depth - 1, lg);
+		//nodes += perft(depth - 1, lg);
 		nodes += perft(depth - 1);
 
 		// unmove

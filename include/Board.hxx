@@ -52,6 +52,7 @@ class Board {
 	struct EnPassantInfo {
 		arma::uword square = 0;
 		PieceColor color = PieceColor::NONE;
+        bool capture = false;
 	};
 
 	//struct CastlingInfo {
