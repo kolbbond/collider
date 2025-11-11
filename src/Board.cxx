@@ -50,7 +50,7 @@ void Board::init(std::string fen, ShLogPr lg) {
 		}
 	}
 
-   // initialize castling rights
+	// initialize castling rights
 	_castling_list[0][PieceColor::WHITE][CastlingSide::KINGSIDE] = false;
 	_castling_list[0][PieceColor::WHITE][CastlingSide::QUEENSIDE] = false;
 	_castling_list[0][PieceColor::BLACK][CastlingSide::KINGSIDE] = false;
@@ -163,7 +163,7 @@ void Board::init(std::string fen, ShLogPr lg) {
 		cnt++;
 		if(cnt < num_chars) continue;
 
-        std::printf("Parsing rest of FEN: %c\n", c);
+		std::printf("Parsing rest of FEN: %c\n", c);
 
 		// check color
 		if(c == 'w') {
@@ -898,20 +898,25 @@ bool Board::move(std::string move_str) {
 			_board120[rook_from_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(rook_from_sq120));
 		}
 
+		// if king moves can't castle
 		new_castling_info[fr_pc->get_color()][CastlingSide::KINGSIDE] = false;
 		new_castling_info[fr_pc->get_color()][CastlingSide::QUEENSIDE] = false;
 	}
+
+	// if rook moves can't castle (unless rook moves back)
 	if(fr_pc->get_type() == PieceType::ROOK) {
-		if(fr_file == 0) {
+		if(fr_file == FILE_A) {
 			new_castling_info[fr_pc->get_color()][CastlingSide::QUEENSIDE] = false;
-		} else if(fr_file == 7) {
+		} else if(fr_file == FILE_H) {
 			new_castling_info[fr_pc->get_color()][CastlingSide::KINGSIDE] = false;
 		}
 	}
+
+	// if rook is taken also can't castle
 	if(to_pc->get_type() == PieceType::ROOK) {
-		if(to_file == 0) {
+		if(to_file == FILE_A) {
 			new_castling_info[to_pc->get_color()][CastlingSide::QUEENSIDE] = false;
-		} else if(to_file == 7) {
+		} else if(to_file == FILE_H) {
 			new_castling_info[to_pc->get_color()][CastlingSide::KINGSIDE] = false;
 		}
 	}

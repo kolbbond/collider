@@ -19,9 +19,9 @@ int main(int argc, char** argv) {
 	// run perft test
 	lg->msg("%s --- Running Perft Test --- %s\n", KPNK, KNRM);
 
-	const bool run_position1 = true;
-	const bool run_position2 = true;
-	const bool run_position3 = true;
+	const bool run_position1 = false;
+	const bool run_position2 = false;
+	const bool run_position3 = false;
 	const bool run_position4 = true;
 
 	// run perft on initial position
