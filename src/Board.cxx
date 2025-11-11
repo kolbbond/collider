@@ -50,6 +50,7 @@ void Board::init(std::string fen, ShLogPr lg) {
 		}
 	}
 
+   // initialize castling rights
 	_castling_list[0][PieceColor::WHITE][CastlingSide::KINGSIDE] = false;
 	_castling_list[0][PieceColor::WHITE][CastlingSide::QUEENSIDE] = false;
 	_castling_list[0][PieceColor::BLACK][CastlingSide::KINGSIDE] = false;
@@ -161,6 +162,8 @@ void Board::init(std::string fen, ShLogPr lg) {
 	for(char c : fen) {
 		cnt++;
 		if(cnt < num_chars) continue;
+
+        std::printf("Parsing rest of FEN: %c\n", c);
 
 		// check color
 		if(c == 'w') {
