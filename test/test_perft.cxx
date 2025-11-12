@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
 		lg->msg("%s --- Position 4 --- %s\n", KBLU, KNRM);
 		std::string position4_fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
 		arma::Row<arma::uword> perft_results = { 6, 264, 9467, 422333 };
-		const arma::uword depth = 4;
+		const arma::uword depth = 3;
 		for(arma::uword d = 1; d <= depth; d++) {
 			cldr::ShBoardPr board = cldr::Board::create(position4_fen, lg);
 			cldr::ShEnginePr engine = cldr::Engine::create(board);

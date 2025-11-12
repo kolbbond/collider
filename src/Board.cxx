@@ -642,7 +642,8 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 				// Exceptions:  castling
 				if(mydir == static_cast<arma::sword>(MoveDirections::LEFT) || mydir == static_cast<arma::sword>(MoveDirections::RIGHT)) {
 					if(can_castle(pc->get_color(), CastlingSide::KINGSIDE) || can_castle(pc->get_color(), CastlingSide::QUEENSIDE)) {
-						CastlingSide side = mydir == static_cast<arma::sword>(MoveDirections::RIGHT) ? CastlingSide::KINGSIDE : CastlingSide::QUEENSIDE;
+						CastlingSide side =
+							mydir == static_cast<arma::sword>(MoveDirections::RIGHT) ? CastlingSide::KINGSIDE : CastlingSide::QUEENSIDE;
 						if(side == CastlingSide::KINGSIDE) {
 							//COLLIDER_DEBUG("kingside castling");
 						} else {
@@ -807,7 +808,8 @@ bool Board::move(std::string move_str) {
 		std::cout << "From: " << frsq << " To: " << tosq << " Promo: " << Extra::promo2char(promo) << std::endl;
 		std::cout << "From sq120: " << fr_sq120 << " To sq120: " << to_sq120 << std::endl;
 		std::cout << "piece type on from square: " << _board120[fr_sq120]->get_piece_char() << std::endl;
-		std::cout << "piece color on from square: " << (_board120[fr_sq120]->get_color() == PieceColor::WHITE ? "white" : "black") << std::endl;
+		std::cout << "piece color on from square: " << (_board120[fr_sq120]->get_color() == PieceColor::WHITE ? "white" : "black")
+				  << std::endl;
 		display_movelist(_lg);
 		display_board(_lg);
 		collider_throw_line("Invalid move attempted.");
@@ -840,7 +842,8 @@ bool Board::move(std::string move_str) {
 	if(fr_pc->get_type() == PieceType::PAWN) {
 
 		if(!(last_enpassant_info.square == 0))
-			_board120[last_enpassant_info.square] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_info.square));
+			_board120[last_enpassant_info.square] =
+				Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_info.square));
 
 		// handle creation of new enpassant squares
 		arma::sword diff = to_sq120 - fr_sq120;
@@ -856,18 +859,21 @@ bool Board::move(std::string move_str) {
 			//std::cout << "En passant capture found: from " << get_algebraic_string(fr_sq120, to_sq120) << " enpassant square: " << Extra::sq120to64(last_enpassant_info.square)
 			//		  << std::endl;
 			// capture the pawn
-			arma::uword diff = (fr_pc->get_color() == PieceColor::WHITE ? to_underlying(MoveDirections::DOWN) : to_underlying(MoveDirections::UP));
+			arma::uword diff =
+				(fr_pc->get_color() == PieceColor::WHITE ? to_underlying(MoveDirections::DOWN) : to_underlying(MoveDirections::UP));
 			arma::uword captured_sq120 = to_sq120 + diff;
 			ShPiecePr captured_pc = _board120[captured_sq120];
 			captured_pc->set_alive(false);
-			_board120[last_enpassant_info.square] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_info.square));
+			_board120[last_enpassant_info.square] =
+				Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_info.square));
 			_board120[captured_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, Extra::sq120to64(last_enpassant_info.square));
 			//	COLLIDER_DEBUG("setting captured piece from enpassant");
 			new_enpassant_info.capture = true;
 		}
 
 		// handle promotions
-		if((fr_pc->get_color() == PieceColor::WHITE && to_rank == RANK_8) || (fr_pc->get_color() == PieceColor::BLACK && to_rank == RANK_1)) {
+		if((fr_pc->get_color() == PieceColor::WHITE && to_rank == RANK_8) ||
+			(fr_pc->get_color() == PieceColor::BLACK && to_rank == RANK_1)) {
 			//std::cout << "Promotion move detected: from " << frsq << " to " << tosq << " with promo: " << Extra::promo2char(promo) << std::endl;
 			if(promo == PieceType::NONE) { collider_throw_line("Promotion move detected but no promotion piece specified."); }
 			// promote to queen for now
@@ -929,6 +935,10 @@ bool Board::move(std::string move_str) {
 	fr_pc->_move_count += 1;
 
 	_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
+
+	// check castling rights
+	// @hey: all that matters if if the king has moved and the rooks are captured
+	//       we just need to check the a1, h1 & a8, h8 squares for rooks
 
 	// change turn
 	switch_color();
@@ -1048,7 +1058,8 @@ bool Board::unmove(std::string move_str) {
 		//COLLIDER_DEBUG("Restoring captured piece from enpassant");
 		to_pc->set_alive(true);
 		// square is 1 ahead of enpassant square
-		arma::uword diff = (fr_pc->get_color() == PieceColor::WHITE ? to_underlying(MoveDirections::DOWN) : to_underlying(MoveDirections::UP));
+		arma::uword diff =
+			(fr_pc->get_color() == PieceColor::WHITE ? to_underlying(MoveDirections::DOWN) : to_underlying(MoveDirections::UP));
 		arma::uword captured_sq120 = fr_sq120 + diff;
 		_board120[captured_sq120] = Piece::create(fr_pc->get_enemy_color(), PieceType::PAWN, Extra::sq120to64(captured_sq120));
 		ShPiecePr captured_pc = _board120[captured_sq120];
@@ -1176,8 +1187,13 @@ void Board::display_board(ShLogPr lg) {
 
 	// header
 	lg->newl();
-	lg->msg("\t%s --- %sCollider V2%s --- %s\n", KCYN, KORG, KCYN, KNRM);
-	lg->msg("\t%s --- Current Move: %s%s%s --- %s\n", KCYN, get_color_color(get_color()).c_str(), get_color_string(get_color()).c_str(), KCYN, KNRM);
+	lg->msg("\t%s --- %sCollider V2%s%s --- %s\n", KCYN, KOGB, KNRM, KCYN, KNRM);
+	lg->msg("\t%s --- Current Move: %s%s%s --- %s\n",
+		KCYN,
+		get_color_color(get_color()).c_str(),
+		get_color_string(get_color()).c_str(),
+		KCYN,
+		KNRM);
 
 	// get 64 board
 	std::array<ShPiecePr, 64> board64 = get_board64();
@@ -1246,7 +1262,7 @@ void Board::display_movelist(ShLogPr lg) {
 
 	// header
 	lg->newl();
-	lg->msg("\t%s --- %sdisplay movelist: %s%llu%s--- %s\n", KCYN, KORG, KPNK, num_moves, KCYN, KNRM);
+	lg->msg("\t%s --- %sdisplay movelist: %s%s%llu%s--- %s\n", KCYN, KBNK, KNRM, KPNK, num_moves, KCYN, KNRM);
 	lg->msg("\t%s frsq - tosq - algr - frtype - totype %s\n", KBLU, KNRM);
 
 
