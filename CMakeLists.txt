@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(collider)
+project(collider_project)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -193,38 +193,37 @@ set(source_list
     src/UCI.cxx
 )
 
-add_library(collider
+add_library(collider_lib
     ${source_list}
     )
 
-target_link_libraries(collider
+target_link_libraries(collider_lib
     chug::chug
     Arma::Armadillo
 
 )
 
 if(ENABLE_GUI)
-    target_link_libraries(collider
+    target_link_libraries(collider_lib
         SDL2
         SDL2_image
         smg::smg
     )
 endif()
 
-target_include_directories(collider PUBLIC
+target_include_directories(collider_lib PUBLIC
 include
 
 )
 
 # executable
-add_executable(main main.cxx
+add_executable(collider
+    collider.cxx
 )
 
-target_link_libraries(main
-    collider
+target_link_libraries(collider
+    collider_lib
 )
-
-
 
 enable_testing()
 add_subdirectory(test)

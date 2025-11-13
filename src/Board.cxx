@@ -801,6 +801,7 @@ bool Board::move(std::string move_str) {
 	if(!is_valid(fr_sq120, to_sq120)) {
 		_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
 		COLLIDER_DEBUG("Invalid move attempted.");
+		collider_throw_line("Invalid move attempted.");
 		assert(move_str.find('\0') == std::string::npos);
 
 		std::cout << "movehistory: \n";
@@ -1383,6 +1384,62 @@ std::string Board::get_color_color(PieceColor color) const {
 		return KBLU;
 	else
 		return KNRM;
+}
+
+// return score for given position
+int Board::evaluate(ShLogPr lg) {
+
+	// piece scores
+	const std::map<PieceType, arma::sword> piece_scores = { //
+		{ PieceType::PAWN, 100 },
+		{ PieceType::KNIGHT, 320 },
+		{ PieceType::BISHOP, 330 },
+		{ PieceType::ROOK, 500 },
+		{ PieceType::QUEEN, 900 },
+		{ PieceType::KING, 20000 }
+	};
+
+	// count pieces
+	std::map<PieceType, arma::sword> scores{ //
+		{ PieceType::PAWN, 0 },
+		{ PieceType::KNIGHT, 0 },
+		{ PieceType::BISHOP, 0 },
+		{ PieceType::ROOK, 0 },
+		{ PieceType::QUEEN, 0 },
+		{ PieceType::KING, 0 }
+	};
+
+	// scores
+	arma::sword score = 0;
+	const std::map<PieceColor, arma::sword> color_mult = { //
+		{ PieceColor::WHITE, 1 },
+		{ PieceColor::BLACK, -1 }
+	};
+
+	// walk over board and count pieces
+	for(arma::uword r = RANK_1; r <= RANK_8; r++) {
+		for(arma::uword f = FILE_A; f <= FILE_H; f++) {
+
+			// get sq
+			arma::uword sq120 = Extra::rf2sq120(r, f);
+
+			// check piece
+			ShPiecePr pc = _board120[sq120];
+			PieceType type = pc->get_type();
+			PieceColor color = pc->get_color();
+			PieceType promo_type = PieceType::NONE;
+
+			if(type == PieceType::NONE) continue;
+			if(type == PieceType::OFFBOARD) continue;
+
+			// add scores
+			score += piece_scores.at(type) * color_mult.at(color);
+		}
+	}
+
+	// etc etc what else?
+
+	return score;
 }
 
 PerftStats Board::get_perft_stats(ShLogPr lg) {

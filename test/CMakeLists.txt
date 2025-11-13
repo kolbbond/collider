@@ -7,6 +7,7 @@ set(test_list
     test_template.cxx
     test_board.cxx
     test_perft.cxx
+    test_alphabeta.cxx
     test_uci.cxx
 )
 if(ENABLE_GUI)
@@ -20,7 +21,7 @@ foreach(srcfile ${test_list})
   string(REPLACE ".cxx" "" name ${srcfile})
   add_executable(${name} ${srcfile})
   target_link_libraries(${name} 
-      collider
+      collider_lib
       )
 
   add_test(${name} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${name})

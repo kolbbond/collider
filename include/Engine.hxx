@@ -20,7 +20,10 @@ public:
 	static ShEnginePr create(ShBoardPr board) { return std::make_shared<Engine>(board); }
 	void set_board(ShBoardPr board) { _board = board; }
 
+	// https://www.chessprogramming.org/Alpha-Beta
+	int alpha_beta(int alpha, int beta, int depth);
+
 	// https://www.chessprogramming.org/Perft
-	arma::uword perft(arma::uword depth,cldr::ShLogPr lg = cldr::NullLog::create());
+	arma::uword perft(arma::uword depth, cldr::ShLogPr lg = cldr::NullLog::create());
 };
 } // namespace cldr

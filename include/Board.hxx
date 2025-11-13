@@ -158,6 +158,7 @@ public:
 	std::string get_color_color(PieceColor color) const;
 	std::string get_algebraic_string(arma::uword frsq, arma::uword tosq, PieceType promo = PieceType::NONE) const;
 
+    int evaluate(ShLogPr lg = NullLog::create());
 	PerftStats get_perft_stats(ShLogPr lg = NullLog::create());
 
 

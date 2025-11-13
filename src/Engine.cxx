@@ -3,6 +3,59 @@
 #include "error.hxx"
 #include <armadillo>
 
+//int alphaBeta( int alpha, int beta, int depthleft ) {
+//   if( depthleft == 0 ) return quiesce( alpha, beta );
+//   bestValue = -infinity;
+//   for ( all moves)  {
+//      score = -alphaBeta( -beta, -alpha, depthleft - 1 );
+//      if( score > bestValue )
+//      {
+//         bestValue = score;
+//         if( score > alpha )
+//            alpha = score; // alpha acts like max in MiniMax
+//      }
+//      if( score >= beta )
+//         return bestValue;   //  fail soft beta-cutoff, existing the loop here is also fine
+//   }
+//   return bestValue;
+//}
+// alphabeta (negamax)
+int cldr::Engine::alpha_beta(int alpha, int beta, int depth) {
+	if(depth == 0) {
+
+        // run evaluation
+        return _board->evaluate();
+
+		// @hey: add quiescence search
+	}
+
+	int best_value = -99999;
+
+	// generate moves
+	_board->update_movelist();
+	const arma::Mat<arma::uword> movelist = _board->get_movelist();
+	const arma::uword num_moves = movelist.n_cols;
+	int score = 0;
+	for(arma::uword i = 0; i < num_moves; i++) {
+		// recursive score call
+		score = alpha_beta(-beta, -alpha, depth - 1);
+
+		// check score against best value
+		if(score > best_value) {
+			best_value = score;
+			if(score > alpha) {
+				alpha = score; // alpha acts like max in MiniMax
+			}
+		}
+		if(score >= beta) {
+			return best_value; // fail soft beta-cutoff, exiting the loop here is also fine
+		}
+	}
+
+	// return best move
+	return best_value;
+}
+
 // https://www.chessprogramming.org/Perft
 //typedef unsigned long long u64;
 //
@@ -23,7 +76,6 @@
 //  }
 //  return nodes;
 //}
-
 arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 
 	// early exit and counter
