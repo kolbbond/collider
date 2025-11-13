@@ -46,12 +46,6 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 	const arma::Mat<arma::uword> movelist = _board->get_movelist();
 	const arma::uword num_moves = movelist.n_cols;
 
-	// check for empty movelist
-	if(num_moves == 0) {
-		COLLIDER_DEBUG("No moves left, this is a checkmate.");
-		//		return 0;
-	}
-
 	// debug
 	if(depth == 1) {
 		// get stats
@@ -65,6 +59,12 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 		//lg->msg("%sGenerated %llu moves for Perft(%llu)%s\n", KBLU, num_moves, depth, KNRM);
 		//_board->display_movelist(lg);
 		//_board->display_board(lg);
+	}
+
+	// check for empty movelist
+	if(num_moves == 0) {
+		//COLLIDER_DEBUG("No moves left, this is a checkmate.");
+		//		return 0;
 	}
 
 	// walk over moves
@@ -97,7 +97,8 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 	}
 
 	// display perft stats
-	lg->msg("%sTotal Perft(%llu): N(%llu), Captures(%llu), Enpassant(%llu),  Castles(%llu), Promotions(%llu), Checks(%llu), Checkmates(%llu), ...%s\n",
+	lg->msg("%sTotal Perft(%llu): N(%llu), Captures(%llu), Enpassant(%llu),  Castles(%llu), Promotions(%llu), Checks(%llu), "
+			"Checkmates(%llu), ...%s\n",
 		KGRN,
 		depth,
 		_total_stats.nodes,

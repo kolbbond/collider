@@ -163,7 +163,8 @@ void Board::init(std::string fen, ShLogPr lg) {
 		cnt++;
 		if(cnt < num_chars) continue;
 
-		std::printf("Parsing rest of FEN: %c\n", c);
+		// debug
+		//std::printf("Parsing rest of FEN: %c\n", c);
 
 		// check color
 		if(c == 'w') {
@@ -644,6 +645,7 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 					if(can_castle(pc->get_color(), CastlingSide::KINGSIDE) || can_castle(pc->get_color(), CastlingSide::QUEENSIDE)) {
 						CastlingSide side =
 							mydir == static_cast<arma::sword>(MoveDirections::RIGHT) ? CastlingSide::KINGSIDE : CastlingSide::QUEENSIDE;
+
 						if(side == CastlingSide::KINGSIDE) {
 							//COLLIDER_DEBUG("kingside castling");
 						} else {
@@ -662,6 +664,9 @@ arma::Row<arma::uword> Board::get_moves(arma::uword sq120) {
 						// check directions
 						if(mydir2 > 0 && !can_castle(pc->get_color(), CastlingSide::KINGSIDE)) continue;
 						if(mydir2 < 0 && !can_castle(pc->get_color(), CastlingSide::QUEENSIDE)) continue;
+
+						// if king has moved can't castle
+						if(pc->has_moved()) continue;
 
 						// if castling left need to check intermediate square
 						if(mydir == static_cast<arma::sword>(MoveDirections::LEFT)) {
@@ -885,6 +890,46 @@ bool Board::move(std::string move_str) {
 	bool castled = false;
 	CastlingInfo last_castling_info = _castling_list.back();
 	CastlingInfo new_castling_info = last_castling_info;
+	//	new_castling_info = check_castling_rights();
+
+	//if rook moves can't castle (unless rook moves back) if(fr_pc->get_type() == PieceType::ROOK) {
+	if(fr_pc->get_type() == PieceType::ROOK) {
+		// check if rook moves back to original square
+		if(fr_pc->get_color() == PieceColor::WHITE) {
+			//if(to_file == FILE_A && to_rank == RANK_1) { new_castling_info[to_pc->get_color()][CastlingSide::QUEENSIDE] = true; }
+			//if(to_file == FILE_H && to_rank == RANK_1) { new_castling_info[to_pc->get_color()][CastlingSide::KINGSIDE] = true; }
+		}
+		// black side
+		if(fr_pc->get_color() == PieceColor::BLACK) {
+			//if(to_file == FILE_A && to_rank == RANK_8) { new_castling_info[to_pc->get_color()][CastlingSide::QUEENSIDE] = true; }
+			//if(to_file == FILE_H && to_rank == RANK_8) { new_castling_info[to_pc->get_color()][CastlingSide::KINGSIDE] = true; }
+		}
+
+		// check if rook moves from original square
+		if(fr_pc->get_color() == PieceColor::WHITE) {
+			if(fr_file == FILE_A && fr_rank == RANK_1) { new_castling_info[fr_pc->get_color()][CastlingSide::QUEENSIDE] = false; }
+			if(fr_file == FILE_H && fr_rank == RANK_1) { new_castling_info[fr_pc->get_color()][CastlingSide::KINGSIDE] = false; }
+		}
+		// black side
+		if(fr_pc->get_color() == PieceColor::BLACK) {
+			if(fr_file == FILE_A && fr_rank == RANK_8) { new_castling_info[fr_pc->get_color()][CastlingSide::QUEENSIDE] = false; }
+			if(fr_file == FILE_H && fr_rank == RANK_8) { new_castling_info[fr_pc->get_color()][CastlingSide::KINGSIDE] = false; }
+		}
+	}
+
+	// if rook is taken also can't castle
+	if(to_pc->get_type() == PieceType::ROOK) {
+		if(to_pc->get_color() == PieceColor::WHITE) {
+			if(to_file == FILE_A && to_rank == RANK_1) { new_castling_info[to_pc->get_color()][CastlingSide::QUEENSIDE] = false; }
+			if(to_file == FILE_H && to_rank == RANK_1) { new_castling_info[to_pc->get_color()][CastlingSide::KINGSIDE] = false; }
+		}
+		if(to_pc->get_color() == PieceColor::BLACK) {
+			if(to_file == FILE_A && to_rank == RANK_8) { new_castling_info[to_pc->get_color()][CastlingSide::QUEENSIDE] = false; }
+			if(to_file == FILE_H && to_rank == RANK_8) { new_castling_info[to_pc->get_color()][CastlingSide::KINGSIDE] = false; }
+		}
+	}
+
+	// check if king moves (should override rook moves)
 	if(fr_pc->get_type() == PieceType::KING) {
 
 		// if castling, move the rook too
@@ -909,36 +954,19 @@ bool Board::move(std::string move_str) {
 		new_castling_info[fr_pc->get_color()][CastlingSide::QUEENSIDE] = false;
 	}
 
-	// if rook moves can't castle (unless rook moves back)
-	if(fr_pc->get_type() == PieceType::ROOK) {
-		if(fr_file == FILE_A) {
-			new_castling_info[fr_pc->get_color()][CastlingSide::QUEENSIDE] = false;
-		} else if(fr_file == FILE_H) {
-			new_castling_info[fr_pc->get_color()][CastlingSide::KINGSIDE] = false;
-		}
-	}
-
-	// if rook is taken also can't castle
-	if(to_pc->get_type() == PieceType::ROOK) {
-		if(to_file == FILE_A) {
-			new_castling_info[to_pc->get_color()][CastlingSide::QUEENSIDE] = false;
-		} else if(to_file == FILE_H) {
-			new_castling_info[to_pc->get_color()][CastlingSide::KINGSIDE] = false;
-		}
-	}
-
-
 	// move piece finally
 	_board120[to_sq120] = fr_pc;
 	fr_pc->set_pos(to_rank, to_file);
-	fr_pc->set_moved(true);
+	fr_pc->set_moved(true); // this and move count is redundant
 	fr_pc->_move_count += 1;
-
 	_board120[fr_sq120] = Piece::create(PieceColor::NONE, PieceType::NONE, fr_rank, fr_file);
 
 	// check castling rights
 	// @hey: all that matters if if the king has moved and the rooks are captured
 	//       we just need to check the a1, h1 & a8, h8 squares for rooks
+	//CastlingInfo last_castling_info = _castling_list.back();
+	//CastlingInfo new_castling_info = last_castling_info;
+	//new_castling_info = check_castling_rights();
 
 	// change turn
 	switch_color();
@@ -1450,15 +1478,15 @@ PerftStats Board::get_perft_stats(ShLogPr lg) {
 		// check for promotions
 		if(promo != PieceType::NONE) { stats.promotions++; }
 
-		// check for checkmate
-		if(!move(move_str)) { collider_throw_line("Invalid move in perft stats calculation."); }
-		arma::Mat<arma::uword> movelist = create_movelist(1, lg);
-		check_for_checks(movelist, lg);
-		if(movelist.is_empty()) {
-			//	COLLIDER_DEBUG("No moves left after creating movelist, this is a checkmate.");
-			stats.checkmates++;
-		}
-		if(!unmove(move_str)) { collider_throw_line("Invalid unmove in perft stats calculation."); }
+		// check for checkmate @hey: this is horridly slow, need better way to implement checkmate calc
+		//if(!move(move_str)) { collider_throw_line("Invalid move in perft stats calculation."); }
+		//arma::Mat<arma::uword> movelist = create_movelist(1, lg);
+		//check_for_checks(movelist, lg);
+		//if(movelist.is_empty()) {
+		//	COLLIDER_DEBUG("No moves left after creating movelist, this is a checkmate.");
+		//stats.checkmates++;
+		//}
+		//if(!unmove(move_str)) { collider_throw_line("Invalid unmove in perft stats calculation."); }
 	}
 
 	// return
@@ -1473,6 +1501,46 @@ bool Board::can_castle(PieceColor color, CastlingSide side) const {
 	CastlingInfo castling_info = _castling_list.back();
 	return castling_info[color][side];
 }
+
+/*
+Board::CastlingInfo Board::check_castling_rights() {
+	// create new castling info based on current board state
+	CastlingInfo new_castling_info;
+
+	// castling rights depend on king moves and rook placement
+	// cannot castle if
+	// king has moved
+	// rook is not on original square (either moved or captured)
+    new_castling_info[PieceColor::WHITE][CastlingSide::KINGSIDE] = false;
+    new_castling_info[PieceColor::WHITE][CastlingSide::QUEENSIDE] = false;
+    new_castling_info[PieceColor::BLACK][CastlingSide::KINGSIDE] = false;
+    new_castling_info[PieceColor::BLACK][CastlingSide::QUEENSIDE] = false;
+
+    // check if king has any moves
+	for(arma::uword r = 0; r < 8; r++) {
+		for(arma::uword f = 0; f < 8; f++) {
+
+			// get sq
+			arma::uword sq120 = Extra::rf2sq120(r, f);
+
+			// check piece
+			ShPiecePr pc = _board120[sq120];
+			PieceType type = pc->get_type();
+			PieceColor color = pc->get_color();
+			PieceType promo_type = PieceType::NONE;
+
+			if(type == PieceType::NONE) continue;
+			if(type == PieceType::OFFBOARD) continue;
+			//if(color != get_turn()) continue;
+
+            // check king
+            if(type == PieceType::KING) {
+                        }
+        }
+    }
+
+}
+*/
 
 // static
 std::string Board::start_fen() { return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; }

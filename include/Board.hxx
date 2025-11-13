@@ -149,6 +149,7 @@ public:
 	bool is_turn(PieceColor color) const;
 	//bool can_castle(PieceColor color) const;
 	bool can_castle(PieceColor color, CastlingSide side) const;
+    //CastlingInfo check_castling_rights();
 
 	bool is_valid(arma::uword fr_sq120, arma::uword to_sq120);
 	void display_board(ShLogPr lg = NullLog::create());
