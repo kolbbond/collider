@@ -12,6 +12,23 @@
 
 namespace cldr {
 
+// piece scores
+const std::map<PieceType, arma::sword> piece_scores = { //
+	{ PieceType::PAWN, 100 },
+	{ PieceType::KNIGHT, 320 },
+	{ PieceType::BISHOP, 330 },
+	{ PieceType::ROOK, 500 },
+	{ PieceType::QUEEN, 900 },
+	{ PieceType::KING, 20000 },
+	{ PieceType::NONE, 0 },
+	{ PieceType::OFFBOARD, 0 }
+};
+
+const std::map<PieceColor, arma::sword> color_mult = { //
+	{ PieceColor::WHITE, 1 },
+	{ PieceColor::BLACK, -1 }
+};
+
 // perft stats
 struct PerftStats {
 	arma::uword nodes = 0;
@@ -52,7 +69,7 @@ class Board {
 	struct EnPassantInfo {
 		arma::uword square = 0;
 		PieceColor color = PieceColor::NONE;
-        bool capture = false;
+		bool capture = false;
 	};
 
 	//struct CastlingInfo {
@@ -70,7 +87,8 @@ class Board {
 		arma::uword from_square;
 		arma::uword to_square;
 		PieceType promotion_type = PieceType::NONE;
-		Move(arma::uword from, arma::uword to, PieceType promo = PieceType::NONE) : from_square(from), to_square(to), promotion_type(promo) {}
+		Move(arma::uword from, arma::uword to, PieceType promo = PieceType::NONE)
+			: from_square(from), to_square(to), promotion_type(promo) {}
 	};
 
 
@@ -89,8 +107,10 @@ public:
 	//	std::array<bool, 2> _can_castle;
 	//std::vector<CastlingInfo> _castling_list = { { { true, true }, { true, true } } };
 	// @hey: this type is a little convuluted
-	std::vector<CastlingInfo> _castling_list = { { { PieceColor::WHITE, { { CastlingSide::KINGSIDE, true }, { CastlingSide::QUEENSIDE, true } } },
-		{ PieceColor::BLACK, { { CastlingSide::KINGSIDE, true }, { CastlingSide::QUEENSIDE, true } } } } };
+	std::vector<CastlingInfo> _castling_list = {
+		{ { PieceColor::WHITE, { { CastlingSide::KINGSIDE, true }, { CastlingSide::QUEENSIDE, true } } },
+			{ PieceColor::BLACK, { { CastlingSide::KINGSIDE, true }, { CastlingSide::QUEENSIDE, true } } } }
+	};
 
 	// enpassant squares
 	std::vector<EnPassantInfo> _enpassant_list = { { 0, PieceColor::NONE } };
@@ -130,6 +150,7 @@ public:
 	void check_for_checks(arma::Mat<arma::uword>& movelist, ShLogPr lg = NullLog::create());
 	void update_movelist(arma::uword depth, ShLogPr lg = NullLog::create());
 	arma::Mat<arma::uword> create_movelist(arma::uword depth, ShLogPr lg = NullLog::create());
+	void prune_non_captures(arma::Mat<arma::uword>& movelist);
 
 	std::string create_fen(ShLogPr lg = NullLog::create()) const;
 	void set_log(ShLogPr lg);
@@ -149,7 +170,7 @@ public:
 	bool is_turn(PieceColor color) const;
 	//bool can_castle(PieceColor color) const;
 	bool can_castle(PieceColor color, CastlingSide side) const;
-    //CastlingInfo check_castling_rights();
+	//CastlingInfo check_castling_rights();
 
 	bool is_valid(arma::uword fr_sq120, arma::uword to_sq120);
 	void display_board(ShLogPr lg = NullLog::create());
@@ -158,7 +179,7 @@ public:
 	std::string get_color_color(PieceColor color) const;
 	std::string get_algebraic_string(arma::uword frsq, arma::uword tosq, PieceType promo = PieceType::NONE) const;
 
-    int evaluate(ShLogPr lg = NullLog::create());
+	int evaluate(ShLogPr lg = NullLog::create());
 	PerftStats get_perft_stats(ShLogPr lg = NullLog::create());
 
 

@@ -275,22 +275,25 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 	bool use_sorting = true;
 	if(use_sorting) {
 
+		// pre sort?
 		arma::Row<arma::uword> sort_idx = arma::sort_index(movelist.row(0), "descend");
 		movelist = movelist.cols(sort_idx);
 
-		arma::Col<arma::uword> idx_captures(movelist.n_cols);
-		arma::Col<arma::uword> idx_kingmoves(movelist.n_cols);
+		arma::Row<double> move_scores(movelist.n_cols, arma::fill::zeros);
 		for(arma::uword i = 0; i < movelist.n_cols; i++) {
 			arma::uword fr_sq120 = movelist(0, i);
 			arma::uword to_sq120 = movelist(1, i);
 			ShPiecePr fr_pc = get_piece(fr_sq120);
 			ShPiecePr to_pc = get_piece(to_sq120);
-			if(fr_pc->get_type() == PieceType::KING) { idx_kingmoves(i) = 1; }
-			if(to_pc->get_type() != PieceType::NONE) { idx_captures(i) = 1; }
+
+			// capture score
+			if(to_pc->get_type() != PieceType::NONE) {
+				move_scores(i) = 2 * piece_scores.at(to_pc->get_type()) - piece_scores.at(fr_pc->get_type());
+			}
 		}
 
 		// sort
-		arma::Row<arma::uword> sort_order = arma::sort_index(idx_captures || idx_kingmoves, "descend");
+		arma::Row<arma::uword> sort_order = arma::sort_index(move_scores, "descend");
 		arma::Mat<arma::uword> movelist_sorted = movelist.cols(sort_order);
 		movelist = movelist_sorted;
 
@@ -538,6 +541,27 @@ arma::Mat<arma::uword> Board::create_movelist(arma::uword depth, ShLogPr lg) {
 
 	// return
 	return arma::join_vert(arma::Row<arma::uword>(from_vec), arma::Row<arma::uword>(to_vec), arma::Row<arma::uword>(promo_vec));
+}
+
+// prune non captures
+void Board::prune_non_captures(arma::Mat<arma::uword>& movelist) {
+
+	// walk over movelist and keep only captures
+	const arma::uword num_moves = movelist.n_cols;
+	arma::Col<arma::uword> idx_captures(num_moves, arma::fill::ones);
+	for(arma::uword i = 0; i < num_moves; i++) {
+		arma::uword to_sq120 = movelist(1, i);
+		ShPiecePr to_pc = get_piece(to_sq120);
+
+		// if not capture
+		if(to_pc->get_type() == PieceType::NONE) {
+			// non capture, remove
+			idx_captures(i) = 0;
+		}
+	}
+
+	// prune
+	movelist = movelist.cols(arma::find(idx_captures == 1));
 }
 
 // return possible to squares in 120 index
@@ -1265,7 +1289,7 @@ void Board::display_board(ShLogPr lg) {
 
 	// print board backwards
 	for(int rank = 7; rank >= 0; rank--) {
-		lg->msg("\t%s %d | ", KCYN, rank+1);
+		lg->msg("\t%s %d | ", KCYN, rank + 1);
 		for(int file = 0; file < 8; file++) {
 
 			// get this sq64 index
@@ -1417,37 +1441,14 @@ std::string Board::get_color_color(PieceColor color) const {
 // return score for given position
 int Board::evaluate(ShLogPr lg) {
 
-	// piece scores
-	const std::map<PieceType, arma::sword> piece_scores = { //
-		{ PieceType::PAWN, 100 },
-		{ PieceType::KNIGHT, 320 },
-		{ PieceType::BISHOP, 330 },
-		{ PieceType::ROOK, 500 },
-		{ PieceType::QUEEN, 900 },
-		{ PieceType::KING, 20000 }
-	};
-
 	// scores
 	arma::sword score = 0;
-	const std::map<PieceColor, arma::sword> color_mult = { //
-		{ PieceColor::WHITE, 1 },
-		{ PieceColor::BLACK, -1 }
-	};
-
-	// count pieces
-	//	std::map<PieceType, arma::sword> scores{ //
-	//		{ PieceType::PAWN, 0 },
-	//		{ PieceType::KNIGHT, 0 },
-	//		{ PieceType::BISHOP, 0 },
-	//		{ PieceType::ROOK, 0 },
-	//		{ PieceType::QUEEN, 0 },
-	//		{ PieceType::KING, 0 }
-	//	};
-
 
 	// walk over board and count pieces
 	for(arma::uword r = RANK_1; r <= RANK_8; r++) {
 		for(arma::uword f = FILE_A; f <= FILE_H; f++) {
+
+			arma::sword score_temp = 0;
 
 			// get sq
 			arma::uword sq120 = Extra::rf2sq120(r, f);
@@ -1461,9 +1462,20 @@ int Board::evaluate(ShLogPr lg) {
 			if(type == PieceType::NONE) continue;
 			if(type == PieceType::OFFBOARD) continue;
 
-			// add scores
-			//score += piece_scores.at(type) * color_mult.at(color);
-			score += piece_scores.at(type) * color_mult.at(color);
+			// add piece scores
+			score_temp += piece_scores.at(type);
+
+			// add positional scores
+			if(pc->_move_count > 0) {
+				score_temp += 25;
+				if(type == PieceType::PAWN) { score_temp += 10; }
+				if(type == PieceType::KNIGHT || type == PieceType::BISHOP) { score_temp += 20; }
+				if(type == PieceType::ROOK) { score_temp += 30; }
+				if(type == PieceType::QUEEN) { score_temp += 40; }
+			}
+
+			// add to total score (multiplied by piece color)
+			score += score_temp * color_mult.at(color);
 		}
 	}
 
