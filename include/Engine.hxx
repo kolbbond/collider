@@ -13,6 +13,11 @@ public:
 	// perft stats to sum
 	PerftStats _total_stats;
 
+	double _max_depth = 0;
+	arma::Row<arma::uword> _num_nodes_per_depth;
+	arma::uword _num_nodes = 0;
+	arma::Row<double> _time_alphabeta;
+
 public:
 	Engine();
 	Engine(ShBoardPr board) { set_board(board); }
@@ -21,7 +26,15 @@ public:
 	void set_board(ShBoardPr board) { _board = board; }
 
 	// https://www.chessprogramming.org/Alpha-Beta
-	int alpha_beta(int alpha, int beta, int depth);
+	int alpha_beta(int alpha, int beta, int depth, ShLogPr lg = NullLog::create());
+	void display_alphabeta(cldr::ShLogPr lg);
+	void reset_alphabeta() {
+		_max_depth = 0;
+		_time_alphabeta.reset();
+		_num_nodes_per_depth.reset();
+		_num_nodes = 0;
+	}
+
 
 	// https://www.chessprogramming.org/Perft
 	arma::uword perft(arma::uword depth, cldr::ShLogPr lg = cldr::NullLog::create());

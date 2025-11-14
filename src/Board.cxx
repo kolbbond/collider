@@ -270,6 +270,34 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 	// check for checkmates
 	if(movelist.n_cols == 0) { lg->msg("%sNo valid moves found, checkmate or stalemate.%s\n", KRED, KNRM); }
 
+	// use sorting of movelist
+	// sort captures first, king moves among other heuristics
+	bool use_sorting = true;
+	if(use_sorting) {
+
+		arma::Row<arma::uword> sort_idx = arma::sort_index(movelist.row(0), "descend");
+		movelist = movelist.cols(sort_idx);
+
+		arma::Col<arma::uword> idx_captures(movelist.n_cols);
+		arma::Col<arma::uword> idx_kingmoves(movelist.n_cols);
+		for(arma::uword i = 0; i < movelist.n_cols; i++) {
+			arma::uword fr_sq120 = movelist(0, i);
+			arma::uword to_sq120 = movelist(1, i);
+			ShPiecePr fr_pc = get_piece(fr_sq120);
+			ShPiecePr to_pc = get_piece(to_sq120);
+			if(fr_pc->get_type() == PieceType::KING) { idx_kingmoves(i) = 1; }
+			if(to_pc->get_type() != PieceType::NONE) { idx_captures(i) = 1; }
+		}
+
+		// sort
+		arma::Row<arma::uword> sort_order = arma::sort_index(idx_captures || idx_kingmoves, "descend");
+		arma::Mat<arma::uword> movelist_sorted = movelist.cols(sort_order);
+		movelist = movelist_sorted;
+
+		//debug
+		//std::cout << "Movelist before sorting: \n" << sort_order.t() << std::endl;
+	}
+
 	// set
 	_movelist = movelist;
 }
@@ -780,7 +808,7 @@ bool Board::move(std::string move_str) {
 	//COLLIDER_DEBUG("move");
 
 	// parse move
-	assert(move_str.length() == 4 || move_str.length() == 5);
+	if(!(move_str.length() == 4 || move_str.length() == 5)) collider_throw_line("Invalid move string length.");
 
 	// get first two chars
 	std::string frsq = move_str.substr(0, 2);
@@ -1399,22 +1427,23 @@ int Board::evaluate(ShLogPr lg) {
 		{ PieceType::KING, 20000 }
 	};
 
-	// count pieces
-	std::map<PieceType, arma::sword> scores{ //
-		{ PieceType::PAWN, 0 },
-		{ PieceType::KNIGHT, 0 },
-		{ PieceType::BISHOP, 0 },
-		{ PieceType::ROOK, 0 },
-		{ PieceType::QUEEN, 0 },
-		{ PieceType::KING, 0 }
-	};
-
 	// scores
 	arma::sword score = 0;
 	const std::map<PieceColor, arma::sword> color_mult = { //
 		{ PieceColor::WHITE, 1 },
 		{ PieceColor::BLACK, -1 }
 	};
+
+	// count pieces
+	//	std::map<PieceType, arma::sword> scores{ //
+	//		{ PieceType::PAWN, 0 },
+	//		{ PieceType::KNIGHT, 0 },
+	//		{ PieceType::BISHOP, 0 },
+	//		{ PieceType::ROOK, 0 },
+	//		{ PieceType::QUEEN, 0 },
+	//		{ PieceType::KING, 0 }
+	//	};
+
 
 	// walk over board and count pieces
 	for(arma::uword r = RANK_1; r <= RANK_8; r++) {
@@ -1433,13 +1462,13 @@ int Board::evaluate(ShLogPr lg) {
 			if(type == PieceType::OFFBOARD) continue;
 
 			// add scores
+			//score += piece_scores.at(type) * color_mult.at(color);
 			score += piece_scores.at(type) * color_mult.at(color);
 		}
 	}
 
 	// etc etc what else?
-
-	return score;
+	return color_mult.at(get_color()) * score;
 }
 
 PerftStats Board::get_perft_stats(ShLogPr lg) {

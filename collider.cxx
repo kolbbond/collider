@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
 		// update engine or board state if necessary
 		// create movelist
 		lg->msg("%sEngine is calculating its move...%s\n", KBLU, KNRM);
+		lg->msg("%s #move   #ply   #score   #nodes    #time     #nps %s\n", KYEL, KNRM);
 		board->update_movelist(lg);
 		const arma::Mat<arma::uword> movelist = board->get_movelist();
 		const arma::uword num_moves = movelist.n_cols;
@@ -50,18 +51,23 @@ int main(int argc, char** argv) {
 		arma::sword best_score = -100000;
 		const int alpha = -100000;
 		const int beta = 100000;
-		const arma::uword depth = 3;
+		const arma::uword depth = 4;
 		for(arma::uword i = 0; i < num_moves; i++) {
 
 			// run alphabeta on each move to find best move
 			const arma::Col<arma::uword> mymove = movelist.col(i);
 			std::string movestr = board->get_algebraic_string(mymove(0), mymove(1), static_cast<PieceType>(mymove(2)));
+			lg->msg("%s %5s %5llu %s", KYEL, movestr.c_str(), depth, KNRM);
 			if(!board->move(movestr)) {
 				lg->msg("%sError moving move: %s%s\n", KRED, movestr.c_str(), KNRM);
 				continue;
 			}
 			// alphabeta
-			int score = -engine->alpha_beta(alpha, beta, depth);
+			int score = -engine->alpha_beta(alpha, beta, depth, lg);
+			lg->msg("%s    %05d%s", KYEL, score, KNRM);
+			engine->display_alphabeta(lg);
+			//engine->_time_alphabeta.clear();
+			engine->reset_alphabeta();
 			if(!board->unmove(movestr)) {
 				lg->msg("%sError unmoving move: %s%s\n", KRED, movestr.c_str(), KNRM);
 				continue;

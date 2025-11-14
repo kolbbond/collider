@@ -20,11 +20,25 @@
 //   return bestValue;
 //}
 // alphabeta (negamax)
-int cldr::Engine::alpha_beta(int alpha, int beta, int depth) {
-	if(depth == 0) {
+int cldr::Engine::alpha_beta(int alpha, int beta, int depth, ShLogPr lg) {
+	// log
+	//lg->msg("%sAlphaBeta: depth(%d), alpha(%d), beta(%d)%s\n", KYEL, depth, alpha, beta, KNRM);
+	// check depth
+	if(depth > _max_depth) {
+		_max_depth = depth;
+		_time_alphabeta.resize(_max_depth);
+		_num_nodes_per_depth.resize(_max_depth);
+	}
 
-        // run evaluation
-        return _board->evaluate();
+	// timer
+	arma::wall_clock timer;
+	timer.tic();
+
+	if(depth == 0) {
+		_num_nodes++;
+
+		// run evaluation
+		return _board->evaluate();
 
 		// @hey: add quiescence search
 	}
@@ -37,8 +51,12 @@ int cldr::Engine::alpha_beta(int alpha, int beta, int depth) {
 	const arma::uword num_moves = movelist.n_cols;
 	int score = 0;
 	for(arma::uword i = 0; i < num_moves; i++) {
+		arma::Col<arma::uword> mymove = movelist.col(i);
+		std::string movestr = _board->get_algebraic_string(mymove(0), mymove(1), static_cast<PieceType>(mymove(2)));
+		if(!_board->move(movestr)) { collider_throw_line("Invalid move attempted in alpha_beta."); }
+
 		// recursive score call
-		score = alpha_beta(-beta, -alpha, depth - 1);
+		score = -alpha_beta(-beta, -alpha, depth - 1, lg);
 
 		// check score against best value
 		if(score > best_value) {
@@ -47,13 +65,34 @@ int cldr::Engine::alpha_beta(int alpha, int beta, int depth) {
 				alpha = score; // alpha acts like max in MiniMax
 			}
 		}
+
+		// early exit
 		if(score >= beta) {
+			//COLLIDER_DEBUG("early beta exit");
+			if(!_board->unmove(movestr)) { collider_throw_line("Invalid unmove attempted in alpha_beta."); }
 			return best_value; // fail soft beta-cutoff, exiting the loop here is also fine
 		}
+
+		if(!_board->unmove(movestr)) { collider_throw_line("Invalid unmove attempted in alpha_beta."); }
 	}
+
+	// timer and log
+	const double time_elapsed = timer.toc();
+	_time_alphabeta(depth - 1) += time_elapsed;
+	//lg->msg("%sdepth(%llu) completed in %0.3f [s]%s\n", KCYN, depth, time_elapsed, KNRM);
 
 	// return best move
 	return best_value;
+}
+
+void cldr::Engine::display_alphabeta(cldr::ShLogPr lg) {
+	//lg->msg("%sAlphaBeta Times per Depth:%s\n", KGRN, KNRM);
+	//for(arma::uword d = 0; d < _max_depth; d++) {
+	//
+	//lg->msg("%s (%llu): %0.3f [s]%s", KCYN, d + 1, _time_alphabeta(d), KNRM);
+	//}
+	lg->msg("%s %8llu %8.3f %8.0f%s", KYEL, _num_nodes, arma::accu(_time_alphabeta), _num_nodes / arma::accu(_time_alphabeta), KNRM);
+	lg->newl();
 }
 
 // https://www.chessprogramming.org/Perft
