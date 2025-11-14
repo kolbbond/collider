@@ -1259,13 +1259,13 @@ void Board::display_board(ShLogPr lg) {
 	lg->newl();
 	lg->msg("\t%s --- ---------------- --- %s\n", KCYN, KNRM);
 	lg->msg("\t     ");
-	for(char f = 'a'; f <= 'h'; f++) lg->msg("%s%c ", KCYN, f);
+	for(int f = 0; f <= 7; f++) lg->msg("%s%d ", KCYN, f);
 	lg->newl();
 	lg->msg("\t%s --- ---------------- --- %s\n", KCYN, KNRM);
 
 	// print board backwards
 	for(int rank = 7; rank >= 0; rank--) {
-		lg->msg("\t%s %d | ", KCYN, rank);
+		lg->msg("\t%s %d | ", KCYN, rank+1);
 		for(int file = 0; file < 8; file++) {
 
 			// get this sq64 index
@@ -1287,7 +1287,7 @@ void Board::display_board(ShLogPr lg) {
 		}
 
 		// end rank
-		lg->msg("%s| %d", KCYN, rank + 1);
+		lg->msg("%s| %d", KCYN, rank);
 
 		// new rank
 		lg->msg("\n");
@@ -1296,7 +1296,7 @@ void Board::display_board(ShLogPr lg) {
 	// print files at end
 	lg->msg("\t%s --- ---------------- --- %s\n", KCYN, KNRM);
 	lg->msg("\t     ");
-	for(int f = 0; f <= 7; f++) lg->msg("%s%d ", KCYN, f);
+	for(char f = 'a'; f <= 'h'; f++) lg->msg("%s%c ", KCYN, f);
 	lg->newl();
 	lg->msg("\t%s --- ---------------- --- %s\n", KCYN, KNRM);
 	lg->newl();
