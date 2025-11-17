@@ -2,6 +2,229 @@
 #include "debug.hxx"
 #include "error.hxx"
 #include <armadillo>
+#include <ostream>
+
+
+// uci prompt input
+
+// need to handle specific strings from the cpu
+// these strings are from stdin
+
+// General
+// * must always be able to process input from stdin, even while thinking
+// * all strings in/out should end in \n
+// * arbitrary whitespace is allowed
+// * always in forced mode, never start calc or ponder without "go"
+// * before asked to search will receive position command
+// * default GUI handles book, this can be overridden
+// * if receiving unknown command should still parse rest of string
+// * if receiving command it should not it should ignore it
+
+// Moves
+// * moves are in long algebraic notation
+// i.e. e2e4, e7e8q, 0000 is null move
+
+// Commands
+// "uci" - sent as first command, engine responds with "id" and "option" commands
+//         then "uciok"
+// "debug" - to enable extra info from engine with "info string" command. can be sent at any time
+// "isready" - check if engine is ready, must answer with "readyok"
+// "setoption name <id> [value <x>]"
+// "register" - register the engine, reply with "later", "name <x>", or "code <y>"
+// "ucinewgame" - sent when a new game is started, not required
+// "position [fen <fenstring> | startpos ]  moves <move1> .... <movei>"
+// - start from a position fen or startpos or set of moves
+// "go" start calculating, this command can be followed by multiple commands in the same string
+//      - "searchmoves <move1> ... <movei>" - search only these moves
+//      - "ponder" - start in pondering mode
+//      - "wtime <x>" - white has x msec left on the clock
+//     - "btime <x>" - black has x msec left on the clock
+//     - "winc <x>" - white increment per move in msec if x > 0
+//    - "binc <x>" - black increment per move in msec if x > 0
+//    - "movestogo <x>" - there are x moves to the next time control
+//   - "depth <x>" - search x plies only
+//  - "nodes <x>" - search x nodes only
+// - "mate <x>" - search for a mate in x moves
+// - "movetime <x>" - search exactly x msec
+// - "infinite" - search until the "stop" command
+//
+// "stop" - stop calculating as soon as possible, reply with bestmove
+// "ponderhit" - the user has played the expected move while pondering,
+// "quit" - quit the program as soon as possible
+
+// Engine
+// "id" - must be sent after "uci" command
+// - "name <x>" - the name of the engine
+// - "author <x>" - the author of the engine
+// "uciok" - must be sent after "id" and "option" commands, engine is ready
+// "readyok" - must be sent as response to "isready" command
+// "bestmove <move> [ponder <move>]" - sent after "go" or "stop" command
+
+// "copyprotection [ok | error]" - sent after "cp" command
+// "registration [ok | error]" - sent after "register" command
+// "info" - sent during search to inform the GUI about the search status
+// - "depth <x>" - current search depth in plies
+// - "seldepth <x>" - current selective search depth in plies
+// - "time <x>" - total search time in msec
+// - "nodes <x>" - total number of nodes searched
+// - "pv <move1> ... <movei>" - the principal variation line
+// - "multipv <x>" - the x-th line of the multipv list
+// - "score cp <x>" - the score from the engine's point of view in centipawns
+// - "score mate <x>" - mate in x moves from the engine's point of view
+// - "currmove <move>" - currently searched move
+// - "currmovenumber <x>" - currently searched move number
+// - "hashfull <x>" - hash table is x/1000 full
+// - "nps <x>" - nodes per second
+// - "tbhits <x>" - number of tablebase hits
+// - "cpuload <x>" - current CPU load in percent
+// - "string <x>" - string to be displayed in the GUI
+// - "refutation <move1> ... <movei>" - the refutation line
+// - "currline <x> <move1> ... <movei>" - the current line at depth x
+
+// Options
+// "option name <id> type <t> [default <x>] [min <x>] [max <x>] [var <x1> ... <xi>]"
+// - "name <id>" - the name of the option, must be unique
+// - "type <t>" - the type of the option, one of "check", "spin", "combo", "button", or "string"
+// - "default <x>" - the default value of the option
+// - "min <x>" - the minimum value for spin options
+// - "max <x>" - the maximum value for spin options
+// - "var <x1> ... <xi>" - the list of possible values for combo options
+void cldr::Engine::prompt(std::string input) {
+	// check string
+	assert(!input.empty());
+
+	// debug
+	ShLogPr lg = Log::create();
+	//lg->msg("%sEngine received input: %s%s\n", KBLU, input.c_str(), KNRM);
+
+	// parse input
+
+	// uci options
+	if(input == "uci") {
+		// id name
+		std::cout << "id name Collider V2.0\n";
+		std::cout << "id author Dylan Kolb-Bond\n";
+		// uciok
+		std::cout << "uciok\n";
+		return;
+	} else if(input == "debug") {
+	} else if(input == "isready") {
+		// readyok
+		std::cout << "readyok\n";
+		return;
+	} else if(input == "ucinewgame") {
+		// new game, reset board
+		if(_board != NULL) { _board->Board::create(Board::start_fen(), lg); }
+		return;
+	}
+
+	// if input has "position"
+	if(input.find("position") != std::string::npos) {
+		if(input.find("startpos") != std::string::npos) {
+			// set to start position
+			_board->Board::create(Board::start_fen(), lg);
+			_board->init(Board::start_fen(), lg);
+		} else {
+			std::cout << "Error: Only 'startpos' is currently supported in 'position' command." << std::endl;
+			//std::err << "Error:";
+			collider_throw_line("Only 'startpos' is currently supported in 'position' command.");
+		}
+		// "moves"
+		if(input.find("moves") != std::string::npos) {
+
+			// find algebraic moves
+			size_t pos = input.find("moves");
+			pos += 6; // move past "moves "
+			while(pos < input.length()) {
+				std::cout << "At idx: " << pos << " / " << input.length() << std::endl;
+
+				// get next move
+				std::string move_str = "";
+				while(pos < input.length() && input[pos] != ' ') {
+					//while(pos < input.length()) {
+					move_str += input[pos];
+					pos++;
+				}
+
+				assert(_board != NULL);
+
+				//assert(0);
+				std::cout << "Applying move: " << move_str << std::endl;
+
+				// apply move
+				if(!_board->move(move_str)) {
+					std::cout << "Failed to apply move: " << move_str << std::endl;
+					collider_throw_line("Invalid move attempted in 'moves' command.");
+				}
+
+				_board->update_movelist(lg);
+
+				// skip space
+				while(pos < input.length() && input[pos] == ' ') { pos++; }
+			}
+		}
+		return;
+	}
+
+	// "go" command
+	if(input.find("go") != std::string::npos) {
+		// run alphabeta
+		_board->update_movelist(lg);
+		const arma::Mat<arma::uword> movelist = _board->get_movelist();
+		const arma::uword num_moves = movelist.n_cols;
+		arma::uword idx_best_move = 0;
+		arma::sword best_score = -100000;
+		const int alpha = -100000;
+		const int beta = 100000;
+		const arma::uword depth = 2;
+
+		// check each move
+		for(arma::uword i = 0; i < num_moves; i++) {
+
+			// run alphabeta on each move to find best move
+			const arma::Col<arma::uword> mymove = movelist.col(i);
+			std::string movestr = _board->get_algebraic_string(mymove(0), mymove(1), static_cast<PieceType>(mymove(2)));
+			lg->msg("%s %5s %5llu %s", KYEL, movestr.c_str(), depth, KNRM);
+			if(!_board->move(movestr)) {
+				lg->msg("%sError moving move: %s%s\n", KRED, movestr.c_str(), KNRM);
+				continue;
+			}
+			// alphabeta
+			int score = -alpha_beta(alpha, beta, depth, lg);
+			lg->msg("%s    %05d%s", KYEL, score, KNRM);
+			display_alphabeta(lg);
+			//engine->_time_alphabeta.clear();
+			reset_alphabeta();
+			if(!_board->unmove(movestr)) {
+				lg->msg("%sError unmoving move: %s%s\n", KRED, movestr.c_str(), KNRM);
+				continue;
+			}
+
+			// check best score
+			if(score > best_score) {
+				best_score = score;
+				idx_best_move = i;
+			}
+		}
+
+		// move for engine
+		if(num_moves > 0) {
+			arma::Col<arma::uword> best_move = movelist.col(idx_best_move);
+			std::string best_move_str = _board->get_algebraic_string(best_move(0), best_move(1), static_cast<PieceType>(best_move(2)));
+			std::cout << "bestmove " << best_move_str << std::endl;
+			return;
+		}
+	}
+
+	// "stop" command
+	if(input.find("stop") != std::string::npos) {
+		//
+	}
+
+
+	// return
+	return;
+}
 
 //int alphaBeta( int alpha, int beta, int depthleft ) {
 //   if( depthleft == 0 ) return quiesce( alpha, beta );

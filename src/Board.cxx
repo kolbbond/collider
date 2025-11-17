@@ -23,7 +23,7 @@ void Board::init(std::string fen, ShLogPr lg) {
 	set_log(lg);
 
 	// log
-	assert(lg != nullptr);
+	assert(lg != NULL);
 	lg->msg("%sInitializing board with FEN: %s%s\n", KPNK, fen.c_str(), KNRM);
 
 	// create a timer
@@ -831,8 +831,15 @@ arma::Mat<arma::uword> Board::get_movelist() const { return _movelist; }
 bool Board::move(std::string move_str) {
 	//COLLIDER_DEBUG("move");
 
+	//std::cout << "Attempting move: " << move_str << std::endl;
+
 	// parse move
-	if(!(move_str.length() == 4 || move_str.length() == 5)) collider_throw_line("Invalid move string length.");
+	if(!(move_str.length() == 4 || move_str.length() == 5)) {
+		std::cout << "Invalid move string length: " << move_str.length() << std::endl;
+		collider_throw_line("Invalid move string length.");
+	}
+
+	//COLLIDER_DEBUG("move");
 
 	// get first two chars
 	std::string frsq = move_str.substr(0, 2);
@@ -851,8 +858,12 @@ bool Board::move(std::string move_str) {
 
 	// check if move is valid
 	if(!is_valid(fr_sq120, to_sq120)) {
+		std::cout << "Invalid move attempted: " << move_str << std::endl;
+		display_movelist(_lg);
+		display_board(_lg);
 		_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
 		COLLIDER_DEBUG("Invalid move attempted.");
+		std::cout << "Invalid move attempted: " << move_str << std::endl;
 		collider_throw_line("Invalid move attempted.");
 		assert(move_str.find('\0') == std::string::npos);
 

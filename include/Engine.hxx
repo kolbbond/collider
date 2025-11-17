@@ -29,6 +29,9 @@ public:
 	static ShEnginePr create(ShBoardPr board) { return std::make_shared<Engine>(board); }
 	void set_board(ShBoardPr board) { _board = board; }
 
+    // uci prompt
+    void prompt(std::string input);
+
 	// https://www.chessprogramming.org/Alpha-Beta
 	int alpha_beta(int alpha, int beta, arma::uword depth, ShLogPr lg = NullLog::create());
 	void display_alphabeta(cldr::ShLogPr lg);

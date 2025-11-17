@@ -1,0 +1,73 @@
+[Event "?"]
+[Site "?"]
+[Date "2025.11.17"]
+[Round "1"]
+[White "Collider V2.0"]
+[Black "Stockfish 14.1"]
+[Result "0-1"]
+[ECO "A00"]
+[GameDuration "00:00:09"]
+[GameEndTime "2025-11-17T11:43:32.346 EST"]
+[GameStartTime "2025-11-17T11:43:23.311 EST"]
+[Opening "Van't Kruijs Opening"]
+[PlyCount "16"]
+[Termination "time forfeit"]
+[TimeControl "40/5"]
+
+1. e3 e5 {-0.25/15 0.14s} 2. Nh3 {0.66s} d5 {+1.06/13 0.10s} 3. Rg1 {0.98s}
+Nf6 {+2.75/13 0.085s} 4. Bb5+ {0.89s} c6 {+3.05/11 0.11s} 5. Bd3 {0.85s}
+Bd6 {+3.57/15 0.23s} 6. f3 {1.4s} e4 {+5.76/11 0.079s} 7. fxe4 {0.57s}
+dxe4 {+4.40/16 0.58s} 8. Be2 {0.93s} Bxh2 {+4.93/13 0.051s, White loses on time}
+0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2025.11.17"]
+[Round "1"]
+[White "Collider V2.0"]
+[Black "Stockfish 14.1"]
+[Result "0-1"]
+[ECO "A00"]
+[GameDuration "00:02:43"]
+[GameEndTime "2025-11-17T11:48:10.965 EST"]
+[GameStartTime "2025-11-17T11:45:27.459 EST"]
+[Opening "Van't Kruijs Opening"]
+[PlyCount "50"]
+[TimeControl "40/10+10"]
+
+1. e3 Nf6 {-0.24/29 8.5s} 2. Nh3 d5 {+1.07/25 4.1s} 3. Bb5+ {0.56s}
+c6 {+1.85/25 4.2s} 4. Bd3 {0.65s} e5 {+2.39/26 4.5s} 5. Rg1 {1.4s}
+Bd6 {+3.54/23 4.7s} 6. f3 {1.4s} e4 {+4.35/23 5.3s} 7. fxe4 {0.75s}
+Bxh2 {+5.38/26 5.4s} 8. Rh1 {0.70s} Bg3+ {+5.52/28 12s} 9. Kf1
+Bg4 {+5.77/25 4.5s} 10. Be2 {0.51s} Bxh3 {+6.10/25 5.7s} 11. gxh3 {0.66s}
+Nxe4 {+8.15/24 5.4s} 12. Rg1 {1.1s} Nf2 {+8.15/25 6.6s} 13. Qe1 {1.1s}
+Bh4 {+9.12/26 7.0s} 14. Bh5 {1.7s} g6 {+9.23/27 19s} 15. Bxg6 {0.77s}
+fxg6 {+12.38/23 4.5s} 16. Rg2 {0.91s} Nxh3 {+14.76/27 6.7s} 17. Qd1
+Rf8+ {+17.61/27 7.0s} 18. Ke2 Qf6 {+18.23/28 7.2s} 19. Qh1 {0.64s}
+Qf3+ {+M13/60 6.7s} 20. Kd3 Qe4+ {+M11/68 7.0s} 21. Ke2 Nf4+ {+M9/87 7.2s}
+22. Kf1 Qf3+ {+M7/245 5.6s} 23. Kg1 Ne2+ {+M5/245 0.039s} 24. Kh2
+Bg3+ {+M3/245 0.016s} 25. Rxg3 Qxg3# {+M1/245 0.007s, Black mates} 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2025.11.17"]
+[Round "1"]
+[White "Stockfish 14.1"]
+[Black "Collider V2.0"]
+[Result "1-0"]
+[ECO "A50"]
+[GameDuration "00:01:13"]
+[GameEndTime "2025-11-17T11:49:24.736 EST"]
+[GameStartTime "2025-11-17T11:48:10.982 EST"]
+[Opening "Queen's pawn game"]
+[PlyCount "21"]
+[Termination "abandoned"]
+[TimeControl "40/10+10"]
+
+1. d4 {+0.38/28 8.8s} Nf6 2. c4 {+0.41/26 5.9s} Rg8 3. Nc3 {+2.21/24 4.2s} Nc6
+4. d5 {+2.48/27 11s} Ne5 {0.56s} 5. f4 {+3.37/22 3.8s} Nxc4
+6. e4 {+3.77/23 4.4s} Nd6 7. e5 {+5.15/23 5.8s} Rb8 {0.60s}
+8. exd6 {+6.46/22 4.9s} exd6 {0.59s} 9. Nf3 {+8.53/24 12s} Qe7+
+10. Be2 {+9.10/22 3.6s} c6 {0.68s} 11. O-O {+9.94/21 5.2s, Black disconnects}
+1-0
+

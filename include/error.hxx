@@ -27,7 +27,8 @@ public:
 	// constructor
 	collider_error(const std::string& arg, const char* file, const char* function, int line) : std::runtime_error(arg) {
 		std::ostringstream o;
-		o << KRED << KBLD << "error: " << KNRM << file << ":" << function << ":" << KGRN << KBLD << line << KNRM << ": " << std::endl << " " KYEL << arg << KNRM;
+		o << KRED << KBLD << "error: " << KNRM << file << ":" << function << ":" << KGRN << KBLD << line << KNRM << ": " << std::endl
+		  << " " KYEL << arg << KNRM;
 		msg = o.str();
 	}
 
@@ -50,8 +51,9 @@ public:
 
 // macro for error
 #define collider_throw_line(arg) throw collider_error(arg, __FILENAME__, __FUNCTION__, __LINE__);
+//#define collider_error(arg) std::err << collider_error(arg, __FILENAME__, __FUNCTION__, __LINE__);
 #define collider_assert(bool, arg) collider_assert(bool, arg, __FILENAME__, __FUNCTION__, __LINE__);
 
 // macro for debug statement
-#define collider_cout(a)                                                                                                                                                           \
+#define collider_cout(a)                                                                                                                   \
 	do { std::cout << #a " is value " << (a) << std::endl; } while(false)
