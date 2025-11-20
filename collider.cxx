@@ -4,14 +4,34 @@
 #include "Board.hxx"
 #include "Engine.hxx"
 
+// display help options
+void display_help() {
+	std::cout << "Collider V2.0\n";
+	std::cout << "Usage: collider [options]\n";
+	std::cout << "Options:\n";
+	std::cout << "  --cli        Start in command-line gameplay mode.\n";
+	std::cout << "  --help       Display this help message.\n";
+	std::cout << "If no options are provided, the engine starts in UCI mode.\n";
+}
 int main(int argc, char** argv) {
+
+	// logger
+	cldr::ShLogPr lg = cldr::Log::create();
+	lg->msg("%s --- Collider V2.0 --- %s\n", KPNK, KNRM);
 
 	// check for command line arguments
 	bool uci_mode = true;
 	if(argc > 1) {
-		std::cout << "Collider V2 - A simple chess engine\n";
 		std::cout << "Usage: " << argv[0] << "\n";
-		if(std::string(argv[1]) == "--cli") { uci_mode = false; }
+		if(std::string(argv[1]) == "--cli") {
+			uci_mode = false;
+		} else if(std::string(argv[1]) == "--help") {
+			// display options
+			display_help();
+			return 0;
+		} else {
+			// no options starts in UCI mode
+		}
 	}
 
 	// uci mode for engine communication
