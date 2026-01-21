@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
 			arma::sword best_score = -100000;
 			const int alpha = -100000;
 			const int beta = 100000;
-			const arma::uword depth = 4;
+			const arma::uword depth = 3;
 			for(arma::uword i = 0; i < num_moves; i++) {
 
 				// run alphabeta on each move to find best move
