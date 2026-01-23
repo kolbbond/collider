@@ -276,7 +276,7 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 	if(use_sorting) {
 
 		// pre sort?
-		arma::Row<arma::uword> sort_idx = arma::sort_index(movelist.row(0), "descend");
+		arma::Col<arma::uword> sort_idx = arma::sort_index(movelist.row(0), "descend");
 		movelist = movelist.cols(sort_idx);
 
 		arma::Row<double> move_scores(movelist.n_cols, arma::fill::zeros);
@@ -293,7 +293,7 @@ void Board::update_movelist(arma::uword depth, ShLogPr lg) {
 		}
 
 		// sort
-		arma::Row<arma::uword> sort_order = arma::sort_index(move_scores, "descend");
+		arma::Col<arma::uword> sort_order = arma::sort_index(move_scores, "descend");
 		arma::Mat<arma::uword> movelist_sorted = movelist.cols(sort_order);
 		movelist = movelist_sorted;
 
