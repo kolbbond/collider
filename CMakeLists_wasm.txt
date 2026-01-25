@@ -1,0 +1,24 @@
+# Minimal CMakeLists for Collider WASM build (no external dependencies except Armadillo)
+cmake_minimum_required(VERSION 3.22)
+project(collider_wasm)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Source files (excluding anything that needs chug)
+set(COLLIDER_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Log.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Piece.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PieceMoves.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Board.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UCI.cxx
+)
+
+add_library(collider_lib STATIC ${COLLIDER_SOURCES})
+
+target_include_directories(collider_lib PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# We'll link Armadillo from the parent project
