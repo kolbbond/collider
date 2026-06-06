@@ -2,7 +2,7 @@
 
 #include "common.hh"
 #include "typedefs.hh"
-#include <chug/log.hh>
+#include "Log.hxx"
 
 // bitboards class
 
@@ -62,7 +62,7 @@ public:
 	BitBoards();
 	ShBitBoardsPr create();
 	void set_position(std::string fen);
-	void init(chug::ShLogPr);
+	void init(cldr::ShLogPr);
 
 	// create the attack boards
 	void create_attack_bitboards();

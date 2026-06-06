@@ -20,6 +20,8 @@
 // for bitboards (must be 64 bit, armadillo is system dependent @hey: we could compile with the 64 bit flag if needed)
 using u64 = unsigned long long;
 using s64 = signed long long;
+// 64-bit bitboard type
+using U64 = unsigned long long;
 
 // @hey: offboard or enpassant doesn't seem to fit here
 enum class PieceType : arma::uword { PAWN = 0, KNIGHT, BISHOP, ROOK, QUEEN, KING, OFFBOARD, ENPASSANT, NONE = 99 };

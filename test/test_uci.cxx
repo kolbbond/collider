@@ -1,7 +1,7 @@
 
 // test uci interface
 #include <armadillo>
-#include "chug/log.hh"
+#include "Log.hxx"
 
 int main(int argc, char** argv) {
 
@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	timer.tic();
 
 	// create log
-	chug::ShLogPr lg = chug::Log::create();
+	cldr::ShLogPr lg = cldr::Log::create();
 	lg->msg("%s --- Test Template: %s%s --- %s\n", KPNK, __DATE__, __TIME__, KNRM);
 
 

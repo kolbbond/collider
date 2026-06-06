@@ -5,7 +5,7 @@ project(collider_wasm)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Source files (excluding anything that needs chug)
+# Source files (core engine only, no GUI/logging extras)
 set(COLLIDER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Log.cxx
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Piece.cxx

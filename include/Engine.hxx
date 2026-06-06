@@ -32,6 +32,11 @@ public:
 	// uci prompt
 	void prompt(std::string input);
 
+	// search the root position and return the best move in algebraic notation
+	// (e.g. e2e4); returns "" when there are no legal moves. leaves the board
+	// unchanged.
+	std::string best_move(arma::uword depth, ShLogPr lg = NullLog::create());
+
 	// https://www.chessprogramming.org/Alpha-Beta
 	int alpha_beta(int alpha, int beta, arma::uword depth, ShLogPr lg = NullLog::create());
 	void display_alphabeta(cldr::ShLogPr lg);

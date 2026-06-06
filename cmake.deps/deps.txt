@@ -1,83 +1,8 @@
-CHUG_URL git@github.com:kolbbond/chug.git
-CHUG_SHA256 0 
-
 OPENBLAS_URL https://github.com/OpenMathLib/OpenBLAS/archive/refs/tags/v0.3.29.zip
-OPENBLAS_SHA256 80c09ba570592176212a519434787c6e39b390c36502b2aa0d1975484a12a42e 
+OPENBLAS_SHA256 80c09ba570592176212a519434787c6e39b390c36502b2aa0d1975484a12a42e
 
-ARMADILLO_URL https://gitlab.com/conradsnicta/armadillo-code/-/archive/14.6.2/armadillo-code-14.6.2.tar.gz 
-ARMADILLO_SHA256 c86559b590e757caa2b32bc60602a14b37cecf66f7aff49b1d90916f4d89f105 
+ARMADILLO_URL https://gitlab.com/conradsnicta/armadillo-code/-/archive/14.6.2/armadillo-code-14.6.2.tar.gz
+ARMADILLO_SHA256 c86559b590e757caa2b32bc60602a14b37cecf66f7aff49b1d90916f4d89f105
 
 SUPERLU_URL https://github.com/xiaoyeli/superlu/archive/refs/tags/v7.0.0.zip
-SUPERLU_SHA256 821576e97c5442f2e863b47d81a4392b705268714528bf7c356b371fa5e62324 
-
-JSONCPP_URL https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.9.6.zip 
-JSONCPP_SHA256 0d445d6e956fb62d69ec6895b0000ea6caddf0680373a0d5a37b719c7fbf369b 
-
-NLOPT_URL https://github.com/stevengj/nlopt/archive/refs/tags/v2.10.0.zip
-NLOPT_SHA256 7bae1edca94c104a72b8d1126770c95963cfaf4530ad880295aae2ecdaa928e1 
-
-VTK_URL https://github.com/Kitware/VTK/archive/refs/tags/v9.5.0.rc2.zip
-VTK_SHA256 59035f162e8ce46d9e832a7a1484ab4c0cd282c172d1e72c6294fbc2d23d6da1 
-
-RATCOMMON_URL https://gitlab.com/Project-Rat/rat-common/-/archive/v2.020.2/rat-common-v2.020.2.tar.gz
-RATCOMMON_SHA256 3ff09ee9e05cc10ad470849aadbe440a2f99b3f2dc9af6f2a6f7ec9971773692 
-
-RATDISTMESH_URL https://gitlab.com/Project-Rat/distmesh-cpp/-/archive/v2.020.2/distmesh-cpp-v2.020.2.tar.gz 
-RATDISTMESH_SHA256 11c6d391c327b87baa5d40fc62c7c56d3fe9bc28eba529da0101534ce61985f6 
-
-RATMATH_URL https://gitlab.com/Project-Rat/rat-math/-/archive/v2.020.2/rat-math-v2.020.2.tar.gz 
-RATMATH_SHA256 c809702adab6610218757ee921a6526209743ac8d5ff1cc9a38f9b87321f81ea 
-
-RATMATERIALS_URL https://gitlab.com/Project-Rat/materials-cpp/-/archive/v2.020.2/materials-cpp-v2.020.2.tar.gz 
-RATMATERIALS_SHA256 9bb0e6ccd6ae2cb4b7a198118b7c1d8a9b89c86cbbe802b523c449ce74280a27 
-
-RATMLFMM_URL https://gitlab.com/kolbbond/rat-mlfmm/-/archive/cuda13fix/rat-mlfmm-cuda13fix.tar.gz?ref_type=heads
-RATMLFMM_SHA256 0d14e64d243dd0ef313718176085362978d8d3913f1b56fa19353d155b334546 
-
-RATMODELS_URL https://gitlab.com/Project-Rat/rat-models/-/archive/v2.020.2/rat-models-v2.020.2.tar.gz 
-RATMODELS_SHA256 15f12b7b07171f901315f6d32668cf6ab442a122cfe1ce4b5e59bd21e1c5d8ec 
-
-CORRADE_URL https://github.com/mosra/corrade/archive/a959501f16432d5780553ef2111e84031c161333.zip 
-CORRADE_SHA256 1a0d7123495adcd91a9b0b29cb909fa2e8c04f3e121029e8000e6b087623cbe6 
-
-MAGNUM_URL https://github.com/mosra/magnum/archive/c8779838934fed294e84ab19977cdcc5106bbcf2.zip 
-MAGNUM_SHA256 873e28fb4b6327e57c318ce2263d4e530338e25a417b2ff0a8d14dda918ea994 
-
-MAGNUMPLUGINS_URL https://github.com/mosra/magnum-plugins/archive/cdc7b46923a2217b7941df257a077497cd9c36b2.zip 
-MAGNUMPLUGINS_SHA256 8c6977a2efe982e7b008b1597f0e152f8ae732ee9b1172b8fb482ecfd4dd84d5 
-
-MAGNUMINTEGRATION_URL https://github.com/mosra/magnum-integration/archive/4a3733e1473c4b53688d044cd1ba26b50154388e.zip 
-MAGNUMINTEGRATION_SHA256 eabef36d7698a383e8221bb5832b496ce7008bc3d53f2ecf605261fdfda0a754 
-
-IMGUI_URL https://github.com/ocornut/imgui/archive/refs/tags/v1.91.9.zip 
-IMGUI_SHA256 873e28fb4b6327e57c318ce2263d4e530338e25a417b2ff0a8d14dda918ea994 
-
-IMPLOT_URL https://github.com/epezent/implot/archive/3da8bd34299965d3b0ab124df743fe3e076fa222.zip
-IMPLOT_SHA256 873e28fb4b6327e57c318ce2263d4e530338e25a417b2ff0a8d14dda918ea994 
-
-IMPLOT3D_URL https://github.com/brenocq/implot3d/archive/743cf425d74568986e4a16dd0ca9e021f0cdfb34.zip
-IMPLOT3D_SHA256 873e28fb4b6327e57c318ce2263d4e530338e25a417b2ff0a8d14dda918ea994 
-
-SMG_URL https://github.com/kolbbond/simple-magnum-gui/archive/e7c47fc1b2aba58d9b5f1a148351cc09b2fb7e67.zip
-SMG_SHA256 8112ee15fbb97601e50e37719ea53252c1d9f0093a952906970f7dbff4bec740 
-
-MUMPS_URL https://github.com/scivision/mumps/archive/refs/tags/v5.8.0.1.zip 
-MUMPS_SHA256 4c289add3375d0c01de2364119e1064e22fc373b7feb86df4ab000c7ff2854db 
-
-GKLIB_URL https://github.com/KarypisLab/GKlib/archive/8bd6bad750b2b0d90800c632cf18e8ee93ad72d7.zip
-GKLIB_SHA256 6a76af30d708e2d2ad11cdac224aa50d7f58abff24963fffa4ef5250fc4c39de 
-
-METIS_URL https://github.com/KarypisLab/METIS/archive/e0f1b88b8efcb24ffa0ec55eabb78fbe61e58ae7.zip 
-METIS_SHA256 fe2083d931b9dba8ce695da64a297afe2d3001a7e4e2bb7c754f967f19014d83 
-
-SUNDIALS_URL https://github.com/LLNL/sundials/archive/refs/tags/v7.3.0.zip 
-SUNDIALS_SHA256 d4e020af94feb2b3bd2a17405466203216c502de82747197b1062f65e4c074de 
-
-SUITESPARSE_URL https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v7.10.3.zip
-SUITESPARSE_SHA256 d4600765554133fb3c0a830ace87ff89225a01ffe02f4012ecfdcf7c778dbcc0 
-
-PYBIND11_URL https://github.com/pybind/pybind11/archive/refs/tags/v3.0.0rc3.zip
-PYBIND11_SHA256 47e1b511bfca5f4d6467ab5731bf9a7d3e81d5dbfc13f58f78a39de3285a47bd
-
-TRACY_URL https://github.com/wolfpld/tracy/archive/refs/tags/v0.12.2.tar.gz
-TRACY_SHA256 09617765ba5ff1aa6da128d9ba3c608166c5ef05ac28e2bb77f791269d444952 
+SUPERLU_SHA256 821576e97c5442f2e863b47d81a4392b705268714528bf7c356b371fa5e62324

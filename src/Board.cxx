@@ -853,36 +853,19 @@ bool Board::move(std::string move_str) {
 	arma::uword to_rank = Extra::char2rank(tosq[1]);
 	arma::uword to_file = Extra::char2file(tosq[0]);
 
+	// reject malformed moves whose squares are off the 8x8 board
+	// (arma::uword is unsigned, so underflow also lands above 7)
+	if(fr_rank >= 8 || fr_file >= 8 || to_rank >= 8 || to_file >= 8) {
+		_lg->msg("%sInvalid move attempted: %s%s\n", KRED, move_str.c_str(), KNRM);
+		return false;
+	}
+
 	arma::uword fr_sq120 = Extra::rf2sq120(fr_rank, fr_file);
 	arma::uword to_sq120 = Extra::rf2sq120(to_rank, to_file);
 
-	// check if move is valid
+	// reject invalid moves (no such legal move in this position)
 	if(!is_valid(fr_sq120, to_sq120)) {
-		std::cout << "Invalid move attempted: " << move_str << std::endl;
-		display_movelist(_lg);
-		display_board(_lg);
-		_lg->msg("%sInvalid move attempted.%s\n", KRED, KNRM);
-		COLLIDER_DEBUG("Invalid move attempted.");
-		std::cout << "Invalid move attempted: " << move_str << std::endl;
-		collider_throw_line("Invalid move attempted.");
-		assert(move_str.find('\0') == std::string::npos);
-
-		std::cout << "movehistory: \n";
-		for(auto mh : _move_history) { std::cout << mh << std::endl; }
-		std::cout << "move list: \n" << _movelist.t() << std::endl;
-		std::cout << "Move string: (" << move_str << ")" << std::endl;
-		std::cout << "move string length: " << move_str.length() << std::endl;
-		for(unsigned char c : move_str) std::cout << "[" << c << "]";
-		std::cout << "\n";
-		std::cout << "From: " << frsq << " To: " << tosq << " Promo: " << Extra::promo2char(promo) << std::endl;
-		std::cout << "From sq120: " << fr_sq120 << " To sq120: " << to_sq120 << std::endl;
-		std::cout << "piece type on from square: " << _board120[fr_sq120]->get_piece_char() << std::endl;
-		std::cout << "piece color on from square: " << (_board120[fr_sq120]->get_color() == PieceColor::WHITE ? "white" : "black")
-				  << std::endl;
-		display_movelist(_lg);
-		display_board(_lg);
-		collider_throw_line("Invalid move attempted.");
-		std::cout << "piece type on to square: " << _board120[to_sq120]->get_piece_char() << std::endl;
+		_lg->msg("%sInvalid move attempted: %s%s\n", KRED, move_str.c_str(), KNRM);
 		return false;
 	}
 

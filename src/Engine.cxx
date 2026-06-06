@@ -168,52 +168,13 @@ void cldr::Engine::prompt(std::string input) {
 
 	// "go" command
 	if(input.find("go") != std::string::npos) {
-		// run alphabeta
-		_board->update_movelist(lg);
-		const arma::Mat<arma::uword> movelist = _board->get_movelist();
-		const arma::uword num_moves = movelist.n_cols;
-		arma::uword idx_best_move = 0;
-		arma::sword best_score = -100000;
-		const int alpha = -100000;
-		const int beta = 100000;
+		// run alphabeta to find the best move
 		const arma::uword depth = 2;
-
-		// check each move
-		for(arma::uword i = 0; i < num_moves; i++) {
-
-			// run alphabeta on each move to find best move
-			const arma::Col<arma::uword> mymove = movelist.col(i);
-			std::string movestr = _board->get_algebraic_string(mymove(0), mymove(1), static_cast<PieceType>(mymove(2)));
-			lg->msg("%s %5s %5llu %s", KYEL, movestr.c_str(), depth, KNRM);
-			if(!_board->move(movestr)) {
-				lg->msg("%sError moving move: %s%s\n", KRED, movestr.c_str(), KNRM);
-				continue;
-			}
-			// alphabeta
-			int score = -alpha_beta(alpha, beta, depth, lg);
-			lg->msg("%s    %05d%s", KYEL, score, KNRM);
-			display_alphabeta(lg);
-			//engine->_time_alphabeta.clear();
-			reset_alphabeta();
-			if(!_board->unmove(movestr)) {
-				lg->msg("%sError unmoving move: %s%s\n", KRED, movestr.c_str(), KNRM);
-				continue;
-			}
-
-			// check best score
-			if(score > best_score) {
-				best_score = score;
-				idx_best_move = i;
-			}
-		}
-
-		// move for engine
-		if(num_moves > 0) {
-			arma::Col<arma::uword> best_move = movelist.col(idx_best_move);
-			std::string best_move_str = _board->get_algebraic_string(best_move(0), best_move(1), static_cast<PieceType>(best_move(2)));
+		const std::string best_move_str = best_move(depth, lg);
+		if(!best_move_str.empty()) {
 			std::cout << "bestmove " << best_move_str << std::endl;
-			return;
 		}
+		return;
 	}
 
 	// "stop" command
@@ -242,6 +203,54 @@ void cldr::Engine::prompt(std::string input) {
 //   }
 //   return bestValue;
 //}
+// search the root position and return the best move in algebraic notation
+std::string cldr::Engine::best_move(arma::uword depth, ShLogPr lg) {
+	// generate the root moves
+	_board->update_movelist(lg);
+	const arma::Mat<arma::uword> movelist = _board->get_movelist();
+	const arma::uword num_moves = movelist.n_cols;
+
+	// no legal moves (checkmate or stalemate)
+	if(num_moves == 0) { return ""; }
+
+	arma::uword idx_best_move = 0;
+	arma::sword best_score = -100000;
+	const int alpha = -100000;
+	const int beta = 100000;
+
+	// search each root move
+	for(arma::uword i = 0; i < num_moves; i++) {
+
+		// run alphabeta on each move to find the best move
+		const arma::Col<arma::uword> mymove = movelist.col(i);
+		const std::string movestr = _board->get_algebraic_string(mymove(0), mymove(1), static_cast<PieceType>(mymove(2)));
+		lg->msg("%s %5s %5llu %s", KYEL, movestr.c_str(), depth, KNRM);
+		if(!_board->move(movestr)) {
+			lg->msg("%sError moving move: %s%s\n", KRED, movestr.c_str(), KNRM);
+			continue;
+		}
+		// alphabeta
+		const int score = -alpha_beta(alpha, beta, depth, lg);
+		lg->msg("%s    %05d%s", KYEL, score, KNRM);
+		display_alphabeta(lg);
+		reset_alphabeta();
+		if(!_board->unmove(movestr)) {
+			lg->msg("%sError unmoving move: %s%s\n", KRED, movestr.c_str(), KNRM);
+			continue;
+		}
+
+		// check best score
+		if(score > best_score) {
+			best_score = score;
+			idx_best_move = i;
+		}
+	}
+
+	// build the best move string (board is left unchanged)
+	const arma::Col<arma::uword> best = movelist.col(idx_best_move);
+	return _board->get_algebraic_string(best(0), best(1), static_cast<PieceType>(best(2)));
+}
+
 // alphabeta (negamax)
 int cldr::Engine::alpha_beta(int alpha, int beta, arma::uword depth, ShLogPr lg) {
 	// log
