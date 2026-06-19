@@ -3,6 +3,25 @@
 #include "error.hxx"
 #include <armadillo>
 #include <ostream>
+#include <sstream>
+
+namespace {
+// Parse the unsigned integer that follows a keyword token in a UCI command,
+// e.g. parse_uint("go depth 4 movetime 100", "depth") -> 4. Returns the
+// supplied fallback when the keyword (or its value) is absent.
+arma::uword parse_uint(const std::string& input, const std::string& key, arma::uword fallback) {
+	std::istringstream ss(input);
+	std::string tok;
+	while(ss >> tok) {
+		if(tok == key) {
+			arma::uword value = 0;
+			if(ss >> value) { return value; }
+			return fallback;
+		}
+	}
+	return fallback;
+}
+} // namespace
 
 
 // uci prompt input
@@ -93,9 +112,10 @@ void cldr::Engine::prompt(std::string input) {
 	// check string
 	assert(!input.empty());
 
-	// debug
-	ShLogPr lg = Log::create();
-	//lg->msg("%sEngine received input: %s%s\n", KBLU, input.c_str(), KNRM);
+	// UCI reserves stdout for protocol replies only. When debug mode is on we
+	// route engine logging to stderr; otherwise it is suppressed. Either way
+	// stdout carries nothing but protocol lines.
+	ShLogPr lg = _debug ? StderrLog::create() : NullLog::create();
 
 	// parse input
 
@@ -107,14 +127,20 @@ void cldr::Engine::prompt(std::string input) {
 		// uciok
 		std::cout << "uciok\n";
 		return;
-	} else if(input == "debug") {
+	} else if(input == "debug" || input == "debug on") {
+		// "debug [on|off]" toggles extra info; bare "debug" turns it on
+		_debug = true;
+		return;
+	} else if(input == "debug off") {
+		_debug = false;
+		return;
 	} else if(input == "isready") {
 		// readyok
 		std::cout << "readyok\n";
 		return;
 	} else if(input == "ucinewgame") {
 		// new game, reset board
-		if(_board != NULL) { _board->Board::create(Board::start_fen(), lg); }
+		if(_board != NULL) { _board->init(Board::start_fen(), lg); }
 		return;
 	}
 
@@ -122,7 +148,6 @@ void cldr::Engine::prompt(std::string input) {
 	if(input.find("position") != std::string::npos) {
 		if(input.find("startpos") != std::string::npos) {
 			// set to start position
-			_board->Board::create(Board::start_fen(), lg);
 			_board->init(Board::start_fen(), lg);
 		} else {
 			std::cout << "Error: Only 'startpos' is currently supported in 'position' command." << std::endl;
@@ -136,8 +161,6 @@ void cldr::Engine::prompt(std::string input) {
 			size_t pos = input.find("moves");
 			pos += 6; // move past "moves "
 			while(pos < input.length()) {
-				std::cout << "At idx: " << pos << " / " << input.length() << std::endl;
-
 				// get next move
 				std::string move_str = "";
 				while(pos < input.length() && input[pos] != ' ') {
@@ -148,12 +171,9 @@ void cldr::Engine::prompt(std::string input) {
 
 				assert(_board != NULL);
 
-				//assert(0);
-				std::cout << "Applying move: " << move_str << std::endl;
-
 				// apply move
 				if(!_board->move(move_str)) {
-					std::cout << "Failed to apply move: " << move_str << std::endl;
+					std::cerr << "Failed to apply move: " << move_str << std::endl;
 					collider_throw_line("Invalid move attempted in 'moves' command.");
 				}
 
@@ -168,8 +188,11 @@ void cldr::Engine::prompt(std::string input) {
 
 	// "go" command
 	if(input.find("go") != std::string::npos) {
-		// run alphabeta to find the best move
-		const arma::uword depth = 2;
+		// honor "go depth <N>"; fall back to a sane default otherwise.
+		// "movetime"/clock controls are parsed but not yet used for a timed
+		// search (no iterative deepening yet) -- documented gap.
+		const arma::uword default_depth = 4;
+		const arma::uword depth = parse_uint(input, "depth", default_depth);
 		const std::string best_move_str = best_move(depth, lg);
 		if(!best_move_str.empty()) {
 			std::cout << "bestmove " << best_move_str << std::endl;
@@ -205,6 +228,9 @@ void cldr::Engine::prompt(std::string input) {
 //}
 // search the root position and return the best move in algebraic notation
 std::string cldr::Engine::best_move(arma::uword depth, ShLogPr lg) {
+	// remember the requested depth before the per-move reset clears _max_depth
+	_last_depth = depth;
+
 	// generate the root moves
 	_board->update_movelist(lg);
 	const arma::Mat<arma::uword> movelist = _board->get_movelist();

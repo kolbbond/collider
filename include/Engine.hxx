@@ -10,10 +10,17 @@ class Engine {
 public:
 	ShBoardPr _board;
 
+	// UCI "debug" mode: when true, prompt() routes engine logging to stderr
+	// (via StderrLog) instead of suppressing it; stdout always stays clean.
+	bool _debug = false;
+
 	// perft stats to sum
 	PerftStats _total_stats;
 
 	arma::uword _max_depth = 0;
+	// depth requested for the most recent best_move() search; survives the
+	// per-root-move reset_alphabeta() and feeds "info depth" output.
+	arma::uword _last_depth = 0;
 	arma::Row<arma::uword> _num_nodes_per_depth;
 	arma::uword _num_nodes = 0;
 	arma::Row<double> _time_alphabeta;

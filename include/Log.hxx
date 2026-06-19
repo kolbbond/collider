@@ -149,4 +149,43 @@ public:
 	int get_num_indent() override final { return 0; }
 };
 
+// stderr logger
+// same formatting as Log, but writes to stderr so it never corrupts a
+// protocol stream (e.g. UCI) that owns stdout. Used for debug output.
+class StderrLog: public Log {
+public:
+	StderrLog() {};
+
+	// factory
+	static ShLogPr create() { return std::make_shared<StderrLog>(); }
+
+	// send text to logbook
+	void msg(const char* fmt, ...) override {
+		mtx_.lock();
+		for(int i = 0; i < num_indent_; i++) std::fprintf(stderr, " ");
+		va_list arg;
+		va_start(arg, fmt);
+		std::vfprintf(stderr, fmt, arg);
+		va_end(arg);
+		mtx_.unlock();
+	}
+
+	// send text to logbook and change indentation afterwards
+	void msg(const int incr, const char* fmt, ...) override {
+		mtx_.lock();
+		if(incr != 0)
+			for(int i = 0; i < num_indent_; i++) std::fprintf(stderr, " ");
+		va_list arg;
+		va_start(arg, fmt);
+		std::vfprintf(stderr, fmt, arg);
+		va_end(arg);
+		assert(static_cast<int>(num_indent_) >= -incr);
+		if(static_cast<int>(num_indent_) >= -incr) num_indent_ += incr;
+		mtx_.unlock();
+	}
+
+	// new line
+	void newl() override { std::fprintf(stderr, " \n"); }
+};
+
 } // namespace cldr

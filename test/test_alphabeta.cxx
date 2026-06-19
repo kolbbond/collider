@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
 	cldr::ShEnginePr engine = cldr::Engine::create(board);
 	int alpha = -100000;
 	int beta = 100000;
-	int depth = 9;
+	int depth = 5;
 
 	// run different depths
 	for(int d = 1; d <= depth; d++) {
