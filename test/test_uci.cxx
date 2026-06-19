@@ -27,10 +27,7 @@ void check(bool cond, const std::string& what) {
 	}
 }
 
-// Run one prompt line and return everything the engine wrote to the real
-// stdout file descriptor. We capture at the fd level (not just std::cout's
-// streambuf) because the engine logs via printf too, and a chess GUI sees
-// every byte on fd 1 regardless of which API produced it.
+// run a prompt line, return everything it wrote to fd 1 (catches printf too)
 std::string capture_prompt(cldr::ShEnginePr engine, const std::string& line) {
 	const char* tmp = "test_uci_capture.tmp";
 
@@ -61,17 +58,14 @@ cldr::ShEnginePr fresh_engine() {
 	return cldr::Engine::create(board);
 }
 
-// "position ... moves ..." must not write anything to stdout. The UCI protocol
-// reserves stdout for protocol replies only; debug chatter belongs on stderr.
+// "position ... moves ..." must write nothing to stdout
 void test_position_moves_no_stdout_pollution() {
 	cldr::ShEnginePr engine = fresh_engine();
 	const std::string out = capture_prompt(engine, "position startpos moves e2e4");
 	check(out.empty(), "position startpos moves e2e4 emits nothing on stdout");
 }
 
-// "ucinewgame" must restore the starting position after moves were played.
-// We probe side-to-move: White at the start, Black after one White move,
-// White again once the board is reset.
+// "ucinewgame" restores the start position (probed via side-to-move)
 void test_ucinewgame_resets_board() {
 	cldr::ShEnginePr engine = fresh_engine();
 	capture_prompt(engine, "position startpos moves e2e4");
@@ -110,8 +104,7 @@ void test_debug_command_toggles_flag() {
 	check(!engine->_debug, "debug off disables debug logging");
 }
 
-// Even with debug enabled, engine logging must not reach stdout -- it belongs
-// on stderr so the GUI's protocol stream stays clean.
+// even with debug on, logging must not reach stdout (goes to stderr)
 void test_debug_on_keeps_stdout_clean() {
 	cldr::ShEnginePr engine = fresh_engine();
 	capture_prompt(engine, "debug on");

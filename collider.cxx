@@ -21,7 +21,7 @@ void display_help() {
 }
 int main(int argc, char** argv) {
 
-	// logger -- banners go to stderr so UCI mode keeps stdout clean for the GUI
+	// banners to stderr; UCI owns stdout
 	cldr::ShLogPr lg = cldr::StderrLog::create();
 	lg->msg("%s --- Collider V2.0 --- %s\n", KPNK, KNRM);
 
@@ -67,11 +67,10 @@ int main(int argc, char** argv) {
 
 	// uci mode for engine communication
 	if(uci_mode) {
-		// stdout is reserved for UCI protocol replies; status goes to stderr
 		cldr::ShLogPr lg = cldr::StderrLog::create();
 		lg->msg("%s --- Collider V2 --- %s\n", KPNK, KNRM);
 
-		// create board and engine (quiet construction -- no stdout chatter)
+		// quiet board construction (no stdout chatter)
 		cldr::ShBoardPr board = cldr::Board::create(cldr::Board::start_fen(), cldr::NullLog::create());
 		cldr::ShEnginePr engine = cldr::Engine::create(board);
 

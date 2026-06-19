@@ -149,9 +149,7 @@ public:
 	int get_num_indent() override final { return 0; }
 };
 
-// stderr logger
-// same formatting as Log, but writes to stderr so it never corrupts a
-// protocol stream (e.g. UCI) that owns stdout. Used for debug output.
+// like Log but writes to stderr (keeps stdout clean for UCI)
 class StderrLog: public Log {
 public:
 	StderrLog() {};

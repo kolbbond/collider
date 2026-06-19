@@ -6,9 +6,7 @@
 #include <sstream>
 
 namespace {
-// Parse the unsigned integer that follows a keyword token in a UCI command,
-// e.g. parse_uint("go depth 4 movetime 100", "depth") -> 4. Returns the
-// supplied fallback when the keyword (or its value) is absent.
+// integer following a keyword token, else fallback: ("go depth 4","depth")->4
 arma::uword parse_uint(const std::string& input, const std::string& key, arma::uword fallback) {
 	std::istringstream ss(input);
 	std::string tok;
@@ -112,9 +110,7 @@ void cldr::Engine::prompt(std::string input) {
 	// check string
 	assert(!input.empty());
 
-	// UCI reserves stdout for protocol replies only. When debug mode is on we
-	// route engine logging to stderr; otherwise it is suppressed. Either way
-	// stdout carries nothing but protocol lines.
+	// keep stdout protocol-only: log to stderr in debug, else suppress
 	ShLogPr lg = _debug ? StderrLog::create() : NullLog::create();
 
 	// parse input
@@ -188,9 +184,7 @@ void cldr::Engine::prompt(std::string input) {
 
 	// "go" command
 	if(input.find("go") != std::string::npos) {
-		// honor "go depth <N>"; fall back to a sane default otherwise.
-		// "movetime"/clock controls are parsed but not yet used for a timed
-		// search (no iterative deepening yet) -- documented gap.
+		// honor "go depth <N>"; time controls not yet used (no timed search)
 		const arma::uword default_depth = 4;
 		const arma::uword depth = parse_uint(input, "depth", default_depth);
 		const std::string best_move_str = best_move(depth, lg);
@@ -228,7 +222,7 @@ void cldr::Engine::prompt(std::string input) {
 //}
 // search the root position and return the best move in algebraic notation
 std::string cldr::Engine::best_move(arma::uword depth, ShLogPr lg) {
-	// remember the requested depth before the per-move reset clears _max_depth
+	// record before per-move reset clears _max_depth
 	_last_depth = depth;
 
 	// generate the root moves
@@ -512,7 +506,7 @@ arma::uword cldr::Engine::perft(arma::uword depth, cldr::ShLogPr lg) {
 
 	// timer and log
 	const double time_elapsed = timer.toc();
-	lg->msg("%sPerft(%llu): %llu [N], %0.3f [s], %0.3f [N/s]%s\n", KCYN, depth, time_elapsed, nodes, ((double)nodes) / time_elapsed, KNRM);
+	lg->msg("%sPerft(%llu): %llu [N], %0.3f [s], %0.3f [N/s]%s\n", KCYN, depth, nodes, time_elapsed, ((double)nodes) / time_elapsed, KNRM);
 
 	// return number of moves
 	return nodes;
